@@ -8,21 +8,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-/* Ontwerp D: één donker afstemvenster met een grote frequentieschaal, daaronder Mijn lijst.
-   Extra schermen: Zenders kiezen (tegelwand), Volledig scherm (radio-apparaat met draaiknop), zenderpagina, mini-speler. */
+/* Ontwerp D: radio-apparaat (stoffen rand, gloeiend display) met echte FM-frequenties op een doorlopende schaal
+   (voorbij 108 MHz: online zenders), daaronder Mijn lijst. Extra: Zenders kiezen, volledig scherm, zenderpagina, mini-speler. */
 :root{
-  --bg:#E5E8EC; --panel:#F7F8FA; --ink:#14181D; --muted:#59616B; --line:#CAD0D7; --hover:#EDF0F3; --track:#C1C7CE; --amber-ink:#8A5000; --bad:#BF3A2E;
+  --bg:#E5E8EC; --panel:#F7F8FA; --ink:#14181D; --muted:#59616B; --line:#CAD0D7; --track:#C1C7CE; --amber-ink:#8A5000; --bad:#BF3A2E;
   --lcd:#0F1216; --lcd-2:#1D232B; --lcd-ink:#F2EFE7; --lcd-muted:#8C959F; --lcd-dim:#6B747E; --lcd-soft:#A6AEB7;
-  --amber:#F4A21E; --amber-dark:#1A1206;
+  --amber:#F4A21E; --amber-dark:#1A1206; --glow:#FFD892;
+  --fabric:#212428;
   --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
   --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ --bg:#0C0F12; --panel:#151A1F; --ink:#E8EBEE; --muted:#97A0AA; --line:#29313A; --hover:#1C2228; --track:#3A424C; --amber-ink:#F6B54A; --bad:#EF6A5D; color-scheme:dark; }
+  :root:not([data-theme="light"]){ --bg:#0C0F12; --panel:#151A1F; --ink:#E8EBEE; --muted:#97A0AA; --line:#29313A; --track:#3A424C; --amber-ink:#F6B54A; --bad:#EF6A5D; color-scheme:dark; }
 }
-:root[data-theme="dark"]{ --bg:#0C0F12; --panel:#151A1F; --ink:#E8EBEE; --muted:#97A0AA; --line:#29313A; --hover:#1C2228; --track:#3A424C; --amber-ink:#F6B54A; --bad:#EF6A5D; color-scheme:dark; }
+:root[data-theme="dark"]{ --bg:#0C0F12; --panel:#151A1F; --ink:#E8EBEE; --muted:#97A0AA; --line:#29313A; --track:#3A424C; --amber-ink:#F6B54A; --bad:#EF6A5D; color-scheme:dark; }
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
@@ -33,23 +34,44 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--amber);outline-offset:3px}
 svg{flex:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body.mode-radio .only-shuffle, body.mode-shuffle .only-radio{display:none!important}
+.tab{font-variant-numeric:tabular-nums}
 
 .wrap{max-width:1360px;margin:0 auto;padding-block:28px 48px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:24px}
 .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px}
 .brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;min-width:0}
 .brand h1{margin:0;font:800 34px/1 var(--f-display);letter-spacing:-.025em}
 .brand p{margin:0;font-size:15px;color:var(--muted)}
+.top-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .btn{height:44px;padding:0 18px 0 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:10px;white-space:nowrap}
 .btn:hover{border-color:var(--muted)}
 .round{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);display:grid;place-items:center;flex:none}
 .linkbtn{height:40px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--amber-ink);font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:8px}
 .linkbtn:hover{text-decoration:underline;text-underline-offset:3px}
+.src{display:inline-flex;padding:4px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+.src button{height:36px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:var(--ink);font-weight:600;font-size:14px;white-space:nowrap}
+.src button[aria-checked="true"]{background:var(--ink);color:var(--bg)}
 
-/* ---------- afstemvenster ---------- */
-.radio{border-radius:26px;padding:12px;background:var(--panel);border:1px solid var(--line)}
-.lcd{position:relative;overflow:hidden;border-radius:18px;padding:22px 30px 0;background:radial-gradient(130% 160% at 50% 0%,var(--lcd-2) 0%,var(--lcd) 70%);color:var(--lcd-ink)}
-.lcd-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;font:500 12px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--lcd-muted)}
-.lcd-status{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+/* ---------- het apparaat ---------- */
+.device{border-radius:34px;padding:14px;background-color:var(--fabric);background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.5px),radial-gradient(rgba(0,0,0,.4) 1px,transparent 1.5px);background-size:5px 5px;background-position:0 0,2.5px 2.5px;box-shadow:0 40px 80px -40px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.08)}
+.lcd{--amb:rgba(43,48,56,.6);position:relative;overflow:hidden;border-radius:24px;padding:20px 30px 0;display:flex;flex-direction:column;color:var(--lcd-ink);background:radial-gradient(70% 95% at 16% 18%,var(--amb) 0%,transparent 62%),radial-gradient(55% 70% at 92% 100%,rgba(244,162,30,.12) 0%,transparent 62%),linear-gradient(180deg,#12161B 0%,#090B0D 100%);box-shadow:inset 0 0 0 2px #000000,inset 0 0 0 3px rgba(255,255,255,.07)}
+.edge{position:absolute;top:0;bottom:0;width:32%;z-index:4;pointer-events:none;opacity:0;transition:opacity .22s ease-out}
+.edge.r{right:0;background:radial-gradient(80% 65% at 100% 55%,rgba(244,162,30,.34) 0%,rgba(244,162,30,.1) 45%,transparent 75%)}
+.edge.l{left:0;background:radial-gradient(80% 65% at 0% 55%,rgba(244,162,30,.34) 0%,rgba(244,162,30,.1) 45%,transparent 75%)}
+.edge::after{content:"";position:absolute;top:6%;bottom:6%;width:3px;border-radius:3px;background:linear-gradient(180deg,transparent,var(--glow) 18%,var(--glow) 82%,transparent);box-shadow:0 0 16px 3px rgba(244,162,30,.75),0 0 46px 10px rgba(244,162,30,.3)}
+.edge.r::after{right:0}
+.edge.l::after{left:0}
+.lcd-top{position:relative;z-index:5;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;font:500 12px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--lcd-muted)}
+.lcd-left{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.lcd-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;padding:4px;border-radius:999px;background:rgba(0,0,0,.4);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.seg button{height:40px;padding:0 18px 0 14px;border:0;border-radius:999px;background:transparent;color:#C9CED4;font:600 14px var(--f-body);letter-spacing:0;text-transform:none;display:inline-flex;align-items:center;gap:8px;transition:background .2s,color .2s}
+.seg{position:relative}
+.seg button{position:relative;z-index:1}
+.seg button[aria-checked="true"]{color:var(--amber-dark)}
+/* het oranje blokje glijdt naar de gekozen modus */
+.seg-thumb{position:absolute;top:4px;bottom:4px;left:4px;width:0;border-radius:999px;background:var(--amber);box-shadow:0 4px 14px -4px rgba(244,162,30,.65),inset 0 1px 0 rgba(255,255,255,.35);transition:left .42s cubic-bezier(.3,1.25,.5,1),width .42s cubic-bezier(.3,1.25,.5,1)}
+.seg.instant .seg-thumb{transition:none}
 .status{display:inline-flex;align-items:center;gap:8px;color:var(--lcd-muted)}
 .status i{width:8px;height:8px;border-radius:50%;background:currentColor}
 .status[data-s="live"]{color:var(--amber)}
@@ -58,55 +80,91 @@ svg{flex:none}
 .status[data-s="tune"] i{animation:blink .6s steps(2) infinite}
 @keyframes pulse{50%{opacity:.35}}
 @keyframes blink{50%{opacity:0}}
-.wissel{display:flex;align-items:center;gap:10px}
-.wissel input{width:76px;height:34px;padding:0 8px;border-radius:8px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:var(--lcd-ink);font:500 15px var(--f-mono);letter-spacing:0;text-align:center}
-.wissel input[aria-invalid="true"]{border-color:#F0695C}
-.lcd-actions{display:flex;align-items:center;gap:8px}
-.ghost{height:36px;padding:0 14px 0 10px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:transparent;color:var(--lcd-ink);font:600 13px var(--f-body);letter-spacing:0;text-transform:none;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.ghost{height:36px;padding:0 14px 0 10px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:var(--lcd-ink);font:600 13px var(--f-body);letter-spacing:0;text-transform:none;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .ghost.icon{width:36px;padding:0;justify-content:center}
-.ghost:hover{background:rgba(255,255,255,.08)}
-.now{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px 28px;margin-top:22px}
-.now-id{display:flex;align-items:center;gap:18px;min-width:0;flex:1 1 420px}
-.now-text{min-width:0}
-.now-name{font:700 58px/1.04 var(--f-display);letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--lcd-muted);transition:color .3s}
-.now-name.lit{color:#F7F3EA}
-.now-meta{margin-top:6px;font:14px/1.4 var(--f-mono);color:var(--lcd-soft)}
-.transport{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.play{width:76px;height:76px;flex:none;border:0;border-radius:50%;background:var(--amber);display:grid;place-items:center;box-shadow:0 0 0 6px rgba(244,162,30,.14),0 10px 24px -8px rgba(244,162,30,.6);transition:transform .12s}
-.play:active{transform:scale(.95)}
-.play svg{width:42%;height:42%;fill:var(--amber-dark)}
-.pill-dark{height:48px;padding:0 20px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);color:var(--lcd-ink);font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:10px;white-space:nowrap}
-.pill-dark:hover{background:rgba(255,255,255,.1)}
-.vol{display:inline-flex;align-items:center;gap:10px;color:var(--lcd-soft)}
-.vol input{width:120px;accent-color:var(--amber)}
-.lcd-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 18px;padding:14px 0 18px;border-top:1px solid rgba(255,255,255,.08);font:13px/1.4 var(--f-mono);color:var(--lcd-muted)}
-.lcd-foot b{font-weight:500;color:var(--lcd-ink)}
-.tab{font-variant-numeric:tabular-nums}
-.progress{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--amber);transition:width 1s linear}
+.ghost:hover{background:rgba(255,255,255,.1)}
+.loc-pop{position:absolute;top:72px;right:30px;z-index:6;width:370px;max-width:calc(100% - 60px);padding:18px;border-radius:18px;background:#161B21;box-shadow:0 30px 60px -20px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.12);display:flex;flex-direction:column;gap:12px;color:var(--lcd-ink)}
+.loc-pop h3{margin:0;font-size:16px;font-weight:600}
+.loc-pop p{margin:0;font-size:13px;line-height:1.45;color:var(--lcd-soft)}
+.loc-form{display:flex;gap:8px;margin:0}
+.loc-form input{flex:1;min-width:0;height:44px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.06);color:var(--lcd-ink);font-size:15px}
+.loc-form button{height:44px;padding:0 18px;border:0;border-radius:10px;background:var(--amber);color:var(--amber-dark);font-weight:600;font-size:14px}
+.loc-err{font-size:13px;line-height:1.4;color:#F0695C}
+.loc-quick{display:flex;flex-wrap:wrap;gap:6px}
+.loc-quick button{height:32px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:transparent;color:#E8E4DA;font-size:13px;font-weight:500}
 
-/* ---------- logo's ---------- */
+.main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px 40px;align-items:center;margin-top:26px}
+.idcol{min-width:0;display:flex;flex-direction:column;gap:16px}
+.freq{display:flex;align-items:flex-end;gap:12px}
+.unit{padding-bottom:.9em;font:500 14px var(--f-mono);letter-spacing:.22em;color:var(--lcd-soft)}
+.readout{font:500 112px/.86 var(--f-mono);letter-spacing:-.05em;color:var(--amber);text-shadow:0 0 40px rgba(244,162,30,.35)}
+.idrow{display:flex;align-items:center;gap:18px;min-width:0}
 .logo{--c:#2A3038;width:40px;height:40px;flex:none;border-radius:10px;display:grid;place-items:center;overflow:hidden;background:var(--c);color:#FFFFFF;font:800 13px/1 var(--f-display);letter-spacing:-.01em;transition:background .4s}
 .logo img{width:100%;height:100%;object-fit:contain;background:#FFFFFF}
-.logo.xl{width:72px;height:72px;border-radius:16px;font-size:22px}
+.logo.xl{width:76px;height:76px;border-radius:20px;font-size:24px;box-shadow:0 18px 36px -16px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.15)}
+.name{font:700 56px/1.02 var(--f-display);letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--lcd-muted);transition:color .3s}
+.name.lit{color:#F7F3EA}
+.meta{margin-top:6px;font:14px/1.4 var(--f-mono);color:#B3BAC2}
+.tcol{display:flex;flex-direction:column;align-items:center;gap:16px}
+.trow{display:flex;align-items:center;gap:18px}
+.ring{width:120px;height:120px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.12)}
+.ring-in{width:108px;height:108px;border-radius:50%;display:grid;place-items:center;background:#0D1013}
+.play{width:92px;height:92px;flex:none;border:0;border-radius:50%;background:var(--amber);display:grid;place-items:center;box-shadow:0 14px 34px -10px rgba(244,162,30,.7);transition:transform .12s}
+.play:active{transform:scale(.95)}
+.play svg{width:40%;height:40%;fill:var(--amber-dark)}
+.rbtn{width:58px;height:58px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);color:var(--lcd-ink)}
+.rbtn:hover{background:rgba(255,255,255,.12)}
+.vol{display:inline-flex;align-items:center;gap:10px;color:var(--lcd-soft)}
+.vol input{width:170px;accent-color:var(--amber)}
+.presets{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:24px}
+.preset{height:64px;min-width:0;border-radius:16px;display:flex;align-items:center;gap:10px;padding:0 12px;text-align:left;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:var(--lcd-ink)}
+.preset:hover{background:rgba(255,255,255,.09)}
+.preset[aria-pressed="true"]{background:rgba(244,162,30,.14);border-color:var(--amber);box-shadow:0 12px 30px -14px rgba(244,162,30,.7)}
+.preset .pn{font:12px var(--f-mono);color:var(--lcd-muted)}
+.preset .logo{width:36px;height:36px;font-size:11px}
+.preset .pname{flex:1;min-width:0;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.preset .led{width:8px;height:8px;flex:none;border-radius:50%;background:rgba(255,255,255,.2)}
+.preset .led.on{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.hierna{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;margin-top:24px;padding:12px 14px 12px 12px;border-radius:18px;background:rgba(0,0,0,.28);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.hn-id{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 260px}
+.hn-cap{font:11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--lcd-muted)}
+.hn-name{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hn-bar{display:flex;align-items:center;gap:12px;flex:2 1 280px;min-width:0}
+.bar{flex:1;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.1)}
+.bar span{display:block;height:100%;width:0;border-radius:4px;background:var(--amber);transition:width 1s linear}
+.wissel{display:flex;align-items:center;gap:10px;font:500 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--lcd-muted)}
+.wissel input{width:76px;height:38px;padding:0 8px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:var(--lcd-ink);font:500 15px var(--f-mono);letter-spacing:0;text-align:center}
+.wissel input[aria-invalid="true"]{border-color:#F0695C}
+.lcd-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 18px;padding:12px 0 18px;border-top:1px solid rgba(255,255,255,.08);font:13px/1.4 var(--f-mono);color:var(--lcd-muted)}
 
-/* ---------- frequentieschaal ---------- */
+/* ---------- de schaal: FM-band en online-band ---------- */
 .dial{--lab:80px;position:relative;height:calc(var(--lab) + 170px);margin-top:26px}
-.dial .lbl{position:absolute;transform:translateX(-50%);height:28px;padding:0 9px;border-radius:7px;white-space:nowrap;font:600 12px/1 var(--f-mono);letter-spacing:.06em;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.05);color:#E8E4DA;transition:background .3s,color .3s,border-color .3s}
-.dial .lbl:hover{background:rgba(255,255,255,.12)}
-.dial .lbl.off{border-color:rgba(255,255,255,.08);color:var(--lcd-dim)}
+.band-in-r{animation:bandInR .55s cubic-bezier(.2,.8,.2,1) both}
+.band-in-l{animation:bandInL .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes bandInR{from{opacity:0;translate:160px 0}to{opacity:1;translate:0 0}}
+@keyframes bandInL{from{opacity:0;translate:-160px 0}to{opacity:1;translate:0 0}}
+.dial .lbl{position:absolute;transform:translateX(-50%);height:22px;padding:0 7px;border-radius:7px;white-space:nowrap;font:600 11px/1 var(--f-mono);letter-spacing:.06em;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.08);color:#F2EFE7;transition:background .3s,color .3s,border-color .3s}
+.dial .lbl.minor{height:19px;padding:0 5px;font-size:10px;border-color:rgba(255,255,255,.1);background:rgba(10,12,14,.6);color:var(--lcd-muted)}
+.dial .lbl:hover{background:rgba(255,255,255,.16)}
 .dial .lbl.air{background:var(--amber);border-color:var(--amber);color:var(--amber-dark)}
 .dial .scale{position:absolute;left:0;right:0;top:var(--lab);bottom:0;pointer-events:none}
-.dial .stem{position:absolute;width:1px;background:rgba(140,149,159,.35)}
+.dial .stem{position:absolute;width:1px;background:rgba(140,149,159,.4)}
+.dial .stem.minor{background:rgba(140,149,159,.2)}
 .dial .stem.air{background:var(--amber)}
 .dial .tick{position:absolute;top:20px;width:1px;height:14px;background:var(--lcd-muted);opacity:.5}
 .dial .tick.mid{height:24px}
 .dial .tick.major{width:2px;height:38px;opacity:.9}
 .dial .num{position:absolute;top:72px;transform:translateX(-50%);font:13px var(--f-mono);color:var(--lcd-muted)}
-.dial .mhz{position:absolute;right:0;top:98px;font:11px var(--f-mono);letter-spacing:.14em;color:var(--lcd-dim)}
+.dial .mhz{position:absolute;left:80%;top:98px;font:11px var(--f-mono);letter-spacing:.14em;color:var(--lcd-dim)}
 .dial .needle{position:absolute;top:calc(var(--lab) - 4px);bottom:10px;width:0;pointer-events:none;transition:left 1.1s cubic-bezier(.2,.8,.2,1)}
 .dial.dragging .needle{transition:none}
 .needle .line{position:absolute;top:0;bottom:38px;left:-2px;width:4px;border-radius:2px;background:var(--amber);box-shadow:0 0 10px var(--amber),0 0 34px rgba(244,162,30,.55)}
 .needle .grip{position:absolute;bottom:0;left:0;transform:translateX(-50%);height:36px;min-width:76px;padding:0 12px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:var(--amber);color:var(--amber-dark);font:600 16px var(--f-mono);white-space:nowrap;box-shadow:0 8px 20px -6px rgba(244,162,30,.7)}
+.dial .edgebtn{position:absolute;top:calc(var(--lab) + 42px);transform:translateY(-50%);z-index:3;padding:8px 2px 8px 10px;border:0;background:none;display:inline-flex;align-items:center;gap:5px;font:500 11px var(--f-mono);letter-spacing:.16em;color:rgba(242,239,231,.42);transition:color .25s}
+.dial .edgebtn.r{right:0}
+.dial .edgebtn.l{left:0;padding:8px 10px 8px 2px}
+.dial .edgebtn.near{color:rgba(242,239,231,.7)}
+.dial .edgebtn.hot{color:var(--glow)}
 input.freq{position:absolute;left:calc(2% - 32px);right:calc(2% - 32px);top:calc(var(--lab) - 4px);width:auto;height:calc(100% - var(--lab) + 4px);z-index:2;-webkit-appearance:none;appearance:none;background:transparent;margin:0;cursor:grab}
 input.freq:active{cursor:grabbing}
 input.freq::-webkit-slider-runnable-track{height:100%;background:transparent;border:0}
@@ -127,16 +185,19 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
 .list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:12px}
 .row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
 .row.now{border-color:var(--amber);box-shadow:0 0 0 3px rgba(244,162,30,.22)}
-.row.off .logo{opacity:.45}
+body.mode-shuffle .row.off .logo{opacity:.45}
 .row-main{flex:1;min-width:0;text-align:left;background:none;border:0;padding:4px 0}
 .row-name{display:block;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row.off .row-name{color:var(--muted)}
+body.mode-shuffle .row.off .row-name{color:var(--muted)}
 .row-sub{display:block;font:12px/1.4 var(--f-mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row-sub .bad{color:var(--bad)}
 .switch{position:relative;width:44px;height:26px;flex:none;border:0;border-radius:13px;background:var(--track);transition:background .15s}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
 .switch[aria-pressed="true"]{background:var(--amber)}
 .switch[aria-pressed="true"]::after{left:21px}
+.rowplay{width:36px;height:36px;flex:none;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.row.now .rowplay{background:var(--amber);border-color:var(--amber);color:var(--amber-dark)}
+.rowplay svg{width:12px;height:12px;fill:currentColor}
 .empty{padding:28px 20px;border-radius:16px;border:1px dashed var(--line);color:var(--muted);text-align:center}
 
 /* ---------- Zenders kiezen ---------- */
@@ -158,7 +219,7 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip-f{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);font-weight:600;font-size:14px}
 .chip-f[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(164px,1fr));gap:16px}
 .tile{position:relative;aspect-ratio:1/1;border-radius:22px;box-shadow:0 10px 24px -16px rgba(0,0,0,.45);transition:transform .18s ease,box-shadow .18s ease}
 .tile:hover{transform:translateY(-3px)}
 .tile.in{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--amber),0 14px 28px -14px rgba(0,0,0,.5)}
@@ -172,7 +233,9 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
 .tile.in .badge .chk{display:block}
 .tile.in .badge .plus{display:none}
 .tile-bottom{position:relative;display:block;padding-right:40px}
-.tname{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font:700 19px/1.1 var(--f-display);letter-spacing:-.01em;overflow-wrap:anywhere}
+.tname{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font:700 18px/1.1 var(--f-display);letter-spacing:-.015em;overflow-wrap:break-word}
+.tname.long{font-size:15.5px}
+.tname.xlong{font-size:14px}
 .tgenre{display:block;margin-top:4px;font:11px var(--f-mono);color:rgba(255,255,255,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile-play{position:absolute;right:12px;bottom:12px;z-index:1;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.28);border:1.5px solid rgba(255,255,255,.55)}
 .tile-play.live{background:var(--amber);border-color:var(--amber)}
@@ -212,6 +275,7 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
 .spot .ln{position:absolute;left:0;right:0;top:16px;height:2px;border-radius:1px;background:var(--line)}
 .spot .d{position:absolute;top:14px;width:6px;height:6px;transform:translateX(-50%);border-radius:50%;background:var(--track)}
 .spot .d.me{top:10px;width:14px;height:14px;background:var(--c)}
+.mast{margin-top:6px;font-size:13px;line-height:1.45;color:var(--muted)}
 .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .fact{padding:12px 14px;border-radius:12px;border:1px solid var(--line)}
 .fv{margin-top:4px;font-weight:600;font-size:18px}
@@ -222,27 +286,22 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
 .danger{color:var(--bad)}
 
 /* ---------- volledig scherm ---------- */
-.fs{position:fixed;inset:0;z-index:40;display:flex;padding:18px;overflow:auto;background-color:#212428;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.5px),radial-gradient(rgba(0,0,0,.4) 1px,transparent 1.5px);background-size:5px 5px;background-position:0 0,2.5px 2.5px}
-.fs-screen{position:relative;flex:1;min-width:0;border-radius:30px;overflow:hidden;padding:22px 34px 24px;display:flex;flex-direction:column;gap:clamp(10px,1.8vh,18px);color:var(--lcd-ink);background:radial-gradient(70% 95% at 16% 18%,var(--amb,rgba(43,48,56,.6)) 0%,transparent 62%),radial-gradient(55% 70% at 92% 100%,rgba(244,162,30,.12) 0%,transparent 62%),linear-gradient(180deg,#12161B 0%,#090B0D 100%);box-shadow:inset 0 0 0 2px #000000,inset 0 0 0 3px rgba(255,255,255,.07)}
-.fs-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;font:500 13px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--lcd-soft)}
+.fs{position:fixed;inset:0;z-index:40;display:flex;padding:18px;overflow:auto;background-color:var(--fabric);background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.5px),radial-gradient(rgba(0,0,0,.4) 1px,transparent 1.5px);background-size:5px 5px;background-position:0 0,2.5px 2.5px}
+.fs .lcd{flex:1;min-width:0;border-radius:30px;padding:22px 34px 24px;gap:clamp(10px,1.8vh,18px)}
 .fs-time{font-size:24px;letter-spacing:.04em;color:var(--lcd-ink)}
 .fs-main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:36px;align-items:center}
 .fs-left{min-width:0;display:flex;flex-direction:column;gap:clamp(12px,2.2vh,22px)}
-.fs-freq{display:flex;align-items:flex-end;gap:16px}
-.fs-unit{padding-bottom:.9em;font:500 16px var(--f-mono);letter-spacing:.22em;color:var(--lcd-soft)}
-.fs-readout{font:500 clamp(84px,17vh,176px)/.86 var(--f-mono);letter-spacing:-.05em;color:var(--amber);text-shadow:0 0 46px rgba(244,162,30,.38)}
-.fs-id{display:flex;align-items:center;gap:22px;min-width:0}
-.logo.xxl{width:clamp(64px,10vh,104px);height:clamp(64px,10vh,104px);border-radius:24px;font-size:clamp(20px,3vh,32px);box-shadow:0 20px 40px -18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.15)}
-.fs-name{font:700 clamp(40px,7.5vh,78px)/1 var(--f-display);letter-spacing:-.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--lcd-muted)}
-.fs-name.lit{color:#F7F3EA}
-.fs-meta{margin-top:8px;font:17px var(--f-mono);color:#B3BAC2}
+.fs .readout{font-size:clamp(84px,17vh,176px)}
+.fs .logo.xl{width:clamp(64px,10vh,104px);height:clamp(64px,10vh,104px);border-radius:24px;font-size:clamp(20px,3vh,32px)}
+.fs .name{font-size:clamp(40px,7.5vh,78px)}
+.fs .meta{font-size:17px}
 .fs-next{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font:15px var(--f-mono);color:var(--lcd-soft)}
 .fs-next b{font-weight:500;color:var(--lcd-ink)}
-.bar{flex:1 1 200px;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.1)}
-.bar span{display:block;height:100%;width:0;border-radius:4px;background:var(--amber);transition:width 1s linear}
 .fs-transport{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.play.xl{width:clamp(72px,10vh,96px);height:clamp(72px,10vh,96px);box-shadow:0 0 0 8px rgba(244,162,30,.14),0 18px 40px -12px rgba(244,162,30,.65)}
-.pill-dark.xl{height:64px;padding:0 26px;font-size:18px}
+.pill-dark{height:64px;padding:0 26px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);color:var(--lcd-ink);font-weight:600;font-size:18px;display:inline-flex;align-items:center;gap:12px;white-space:nowrap}
+.fs .play{width:clamp(72px,10vh,96px);height:clamp(72px,10vh,96px);box-shadow:0 0 0 8px rgba(244,162,30,.14),0 18px 40px -12px rgba(244,162,30,.65)}
+.fs .presets{margin-top:0}
+.fs .rbtn{width:64px;height:64px}
 .knob-area{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center}
 .knob-wrap{position:relative;width:min(470px,44vh,100%);aspect-ratio:1/1}
 .skirt{position:absolute;inset:9%;border-radius:50%;background-color:#0C0F12;background-image:repeating-conic-gradient(from -1deg,rgba(255,255,255,.32) 0 .7deg,transparent .7deg 7.5deg);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 0 60px -10px rgba(0,0,0,.8)}
@@ -253,17 +312,8 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
 .cap-c{position:absolute;left:50%;top:50%;width:30%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:radial-gradient(circle at 40% 30%,#1E242B,#0C0F12 75%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.6)}
 .cap-c small{font:11px var(--f-mono);letter-spacing:.2em;color:var(--lcd-muted)}
 .cap-c b{font:800 26px var(--f-display);color:var(--lcd-ink)}
-.ringchip{position:absolute;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;padding:0;display:grid;place-items:center;font:600 11px var(--f-mono);border:1px solid rgba(255,255,255,.18);background:rgba(12,15,18,.85);color:#E8E4DA;transition:background .3s,color .3s}
-.ringchip.off{color:var(--lcd-dim)}
-.ringchip.air{background:var(--amber);border-color:var(--amber);color:var(--amber-dark);box-shadow:0 0 18px rgba(244,162,30,.6)}
-.presets{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
-.preset{height:clamp(56px,7vh,72px);min-width:0;border-radius:16px;display:flex;align-items:center;gap:12px;padding:0 14px;text-align:left;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:var(--lcd-ink)}
-.preset:hover{background:rgba(255,255,255,.09)}
-.preset[aria-pressed="true"]{background:rgba(244,162,30,.14);border-color:var(--amber);box-shadow:0 12px 30px -14px rgba(244,162,30,.7)}
-.preset .pn{font:12px var(--f-mono);color:var(--lcd-muted)}
-.preset .pname{flex:1;min-width:0;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.preset .led{width:8px;height:8px;flex:none;border-radius:50%;background:rgba(255,255,255,.2)}
-.preset .led.on{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.ringchip{position:absolute;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;padding:0;display:grid;place-items:center;font:600 9px var(--f-mono);border:1px solid rgba(255,255,255,.26);background:rgba(12,15,18,.88);color:#E8E4DA;transition:background .3s,color .3s}
+.ringchip.air{width:34px;height:34px;background:var(--amber);border-color:var(--amber);color:var(--amber-dark);box-shadow:0 0 18px rgba(244,162,30,.6)}
 .fs .dial{margin:0 4px}
 @media (max-height:820px){ .fs .dial{--lab:4px} .fs .dial .lbl,.fs .dial .stem{display:none} }
 @media (max-width:980px){
@@ -288,7 +338,7 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
 .strip{position:relative;height:26px}
 .strip .ln{position:absolute;left:0;right:0;top:12px;height:2px;border-radius:1px;background:rgba(255,255,255,.14)}
 .strip .d{position:absolute;top:10px;width:6px;height:6px;transform:translateX(-50%);border-radius:50%;background:rgba(255,255,255,.45)}
-.strip .d.off{background:rgba(255,255,255,.16)}
+.strip .d.minor{top:11px;width:4px;height:4px;background:rgba(255,255,255,.2)}
 .strip .d.air{top:8px;width:10px;height:10px;background:var(--amber)}
 .strip .nd{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--amber);box-shadow:0 0 8px var(--amber);transition:left 1.1s cubic-bezier(.2,.8,.2,1)}
 .mini-ctrl{display:flex;align-items:center;gap:10px}
@@ -301,64 +351,227 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* ---------- smal venster / telefoon ---------- */
+@media (max-width:820px){
+  .main{grid-template-columns:minmax(0,1fr)}
+  .tcol{align-items:flex-start}
+  .presets{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 @media (max-width:720px){
   .wrap{padding-block:18px 32px;gap:14px}
   .brand h1{font-size:26px}
-  .brand p{display:none}
+  .brand p,.top .src{display:none}
   .btn .lbl{display:none}
   .btn{width:44px;padding:0;justify-content:center}
-  .radio{padding:0;border:0;background:none}
-  .lcd{padding:16px 16px 0;border-radius:22px}
-  .lcd-top .count,.ghost .lbl{display:none}
-  .ghost{width:36px;padding:0;justify-content:center}
-  .now{margin-top:16px;gap:14px}
-  .now-id{flex-basis:100%;gap:14px}
+  .device{padding:8px;border-radius:26px}
+  .lcd{padding:14px 14px 0;border-radius:20px}
+  .lcd-left .count,.device .ghost .lbl,.device .seg .lbl{display:none}
+  .device .seg button{padding:0 12px}
+  .device .ghost{width:36px;padding:0;justify-content:center}
+  .fs{padding:8px}
+  .fs .lcd{padding:14px 14px 16px}
+  .fs-time{display:none}
+  .loc-btn{width:auto!important;padding:0 10px!important}
+  .main{margin-top:16px;gap:14px}
+  .readout{font-size:64px}
   .logo.xl{width:56px;height:56px;font-size:18px}
-  .now-name{font-size:32px}
-  .transport{width:100%}
-  .play{width:58px;height:58px}
-  #nextBtn{width:48px;padding:0;justify-content:center}
-  #nextBtn .lbl{display:none}
-  .vol{margin-left:auto}
-  .vol input{width:96px}
+  .name{font-size:32px}
+  .trow{gap:12px}
+  .ring{width:88px;height:88px}
+  .ring-in{width:78px;height:78px}
+  .play{width:66px;height:66px}
+  .rbtn{width:48px;height:48px}
+  .vol input{width:120px}
   .dial{--lab:4px;height:154px;margin-top:14px}
   .dial .lbl,.dial .stem,.dial .mhz{display:none}
   .dial .num.odd{display:none}
   .lcd-foot .hint{display:none}
+  .presets{grid-template-columns:repeat(2,minmax(0,1fr))}
   .list-grid{grid-template-columns:minmax(0,1fr)}
   .kz-title h1{font-size:30px}
   .custom-form{grid-template-columns:minmax(0,1fr)}
   .tiles{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
   .facts{grid-template-columns:minmax(0,1fr)}
   .sheet-id h2{font-size:36px}
+  .loc-pop{right:14px;max-width:calc(100% - 28px)}
 }
+
+/* ---------- locatie: kleine kaartjes onder de locatieknop ---------- */
+.lcd-top{z-index:8}
+.loc-pop{z-index:9}
+.loc-wrap{position:relative;display:inline-flex}
+.note-card{position:absolute;top:calc(100% + 12px);left:0;z-index:6;width:320px;max-width:calc(100vw - 84px);padding:14px 14px 12px 16px;border-radius:16px;background:#F2EFE7;color:#14181D;box-shadow:0 18px 40px -14px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:10px;font:400 13px/1.45 var(--f-body);letter-spacing:0;text-transform:none;text-align:left}
+.note-card.row{flex-direction:row;align-items:flex-start;padding:11px 10px 11px 14px;width:300px}
+.note-arrow{position:absolute;top:-5px;left:18px;width:11px;height:11px;border-radius:2px;background:#F2EFE7;transform:rotate(45deg)}
+.note-head{display:flex;align-items:center;gap:8px}
+.note-head b{font-weight:600;font-size:15px}
+.note-text{color:#3B424A}
+.note-card.row .note-text{flex:1;min-width:0;color:#14181D}
+.note-card.row .note-text b{font-weight:600}
+.note-btns{display:flex;flex-wrap:wrap;gap:8px}
+.note-primary{height:36px;padding:0 14px 0 12px;border:0;border-radius:999px;display:inline-flex;align-items:center;gap:8px;background:var(--amber);color:var(--amber-dark);font-weight:600;font-size:13px}
+.note-secondary{height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(20,24,29,.25);background:transparent;color:#14181D;font-weight:600;font-size:13px}
+.note-link{align-self:flex-start;padding:0;border:0;background:none;color:#8A5000;font-weight:600;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.note-err{font-size:12px;line-height:1.4;color:#B3261E}
+.note-x{width:24px;height:24px;flex:none;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:rgba(20,24,29,.08)}
+@media (max-width:420px){
+  .note-primary{padding:0 10px;gap:6px;font-size:12px}
+  .note-secondary{padding:0 11px;font-size:12px}
+}
+.loc-geo{height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.06);color:var(--lcd-ink);font-weight:600;font-size:14px}
+
+/* ---------- tooltips: vraagteken achter MHz en de zendmast onder de naam ---------- */
+.u-mhz{display:inline-flex;align-items:center;gap:8px}
+.tip{position:relative;cursor:help}
+.tip.q{z-index:7;width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;border:1px solid rgba(255,255,255,.32);color:#C9CED4;font:600 11px/1 var(--f-body);letter-spacing:0}
+.fs .tip.q{width:20px;height:20px;font-size:12px}
+.tip.mast{z-index:7}
+.tipbox{position:absolute;top:calc(100% + 10px);left:-12px;z-index:8;width:270px;padding:10px 12px;border-radius:10px;background:#F2EFE7;color:#14181D;box-shadow:0 14px 30px -10px rgba(0,0,0,.6);font:400 13px/1.45 var(--f-body);letter-spacing:0;text-transform:none;text-align:left;white-space:normal;pointer-events:none;opacity:0;visibility:hidden;translate:0 -4px;transition:opacity .15s,translate .15s,visibility .15s}
+.fs .tipbox{width:300px;font-size:14px}
+.tip:hover .tipbox,.tip:focus .tipbox{opacity:1;visibility:visible;translate:0 0}
+.tip:focus{outline:2px solid var(--amber);outline-offset:2px;border-radius:6px}
+
+/* ---------- info-bolletje rechtsonder ---------- */
+.help-btn{position:fixed;right:24px;bottom:24px;z-index:42;width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel);color:var(--muted);font:700 19px/1 var(--f-display);box-shadow:0 10px 24px -12px rgba(0,0,0,.5);opacity:.72;transition:opacity .2s,background .2s,color .2s,border-color .2s,bottom .3s}
+.help-btn:hover,.help-btn:focus-visible,.help-btn[aria-expanded="true"]{opacity:1}
+.help-btn[aria-expanded="true"]{background:var(--amber);border-color:var(--amber);color:var(--amber-dark)}
+body.mini-floating .help-btn{bottom:262px}
+.help-scrim{position:fixed;inset:0;z-index:41}
+.help-panel{position:fixed;right:24px;bottom:76px;z-index:42;width:430px;max-width:calc(100vw - 32px);max-height:calc(100vh - 110px);overflow:auto;border-radius:22px;color:var(--lcd-ink);background:radial-gradient(90% 60% at 100% 0%,rgba(244,162,30,.16) 0%,transparent 60%),#161B21;box-shadow:0 34px 70px -24px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.12)}
+body.mini-floating .help-panel{bottom:314px}
+.help-top{padding:20px 22px 18px;display:flex;flex-direction:column;gap:14px}
+.help-cap{font:11px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--amber)}
+.help-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.help-x{width:32px;height:32px;border:0;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08)}
+.help-panel h2{margin:0;font:800 28px/1.05 var(--f-display);letter-spacing:-.025em;color:#F7F3EA}
+.help-panel p{margin:0;font-size:14px;line-height:1.5;color:#C9CED4}
+.help-points{display:flex;flex-direction:column;gap:12px}
+.help-point{display:flex;gap:12px;align-items:flex-start}
+.help-ic{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;background:rgba(244,162,30,.14);color:var(--amber);font:600 12px var(--f-mono)}
+.help-point b{display:block;font-weight:600;font-size:14px}
+.help-point div > span{display:block;font-size:13px;line-height:1.45;color:var(--lcd-soft)}
+.help-tech{padding:16px 22px 20px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px}
+.help-tech .help-cap{color:var(--lcd-muted)}
+.help-tech dl{margin:0;display:grid;grid-template-columns:88px minmax(0,1fr);gap:8px 14px}
+.help-tech dt{padding-top:2px;font:11px var(--f-mono);letter-spacing:.06em;color:var(--lcd-muted)}
+.help-tech dd{margin:0;font-size:13px;line-height:1.45;color:#D8DCE0}
+.help-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;font-size:12px;color:var(--lcd-muted)}
+.help-foot b{font:500 12px var(--f-mono);color:#C9CED4}
+.help-foot a{display:inline-flex;align-items:center;gap:6px;color:#F6B54A;font-weight:600;font-size:13px;text-decoration:none}
+@media (max-width:720px){
+  .help-btn{right:16px;bottom:16px}
+  .help-panel{right:16px;bottom:68px}
+}
+
+/* ---------- rustige, tactiele beweging ---------- */
+@keyframes zhPop{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes zhRise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes zhFade{from{opacity:0}to{opacity:1}}
+@keyframes zhTune{0%{opacity:.2;filter:blur(4px)}30%{opacity:.85;filter:blur(1px)}45%{opacity:.55;filter:blur(.5px)}100%{opacity:1;filter:none}}
+@keyframes zhSwap{from{opacity:.4;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes zhBreath{0%,100%{box-shadow:0 0 0 0 rgba(244,162,30,0),0 14px 34px -10px rgba(244,162,30,.6)}50%{box-shadow:0 0 0 8px rgba(244,162,30,.1),0 16px 42px -8px rgba(244,162,30,.78)}}
+.loc-pop,.note-card{animation:zhPop .24s cubic-bezier(.2,.8,.2,1) both;transform-origin:20px 0}
+.help-panel,.mini.floating,.sheet{animation:zhRise .38s cubic-bezier(.2,.8,.2,1) both}
+.modal,.fs{animation:zhFade .3s ease-out both}
+/* knoppen zakken een fractie in en veren terug */
+.play,.rbtn,.ghost,.btn,.round,.seg button,.src button,.chip-f,.cta,.solid,.outline,.rowplay,.switch,.tile-main,.tile-play,.pill-dark,.loc-quick button,.loc-form button,.loc-geo,.note-primary,.note-secondary,.help-btn,.icon-dark,.x-btn{transition:transform .14s cubic-bezier(.3,1.4,.6,1),filter .14s,background .25s,color .25s,border-color .25s,opacity .2s}
+.play:active,.rbtn:active,.ghost:active,.btn:active,.round:active,.seg button:active,.src button:active,.chip-f:active,.cta:active,.solid:active,.outline:active,.rowplay:active,.switch:active,.tile-main:active,.tile-play:active,.pill-dark:active,.loc-quick button:active,.loc-form button:active,.loc-geo:active,.note-primary:active,.note-secondary:active,.help-btn:active,.icon-dark:active,.x-btn:active{transform:translateY(1px) scale(.96);filter:brightness(.94);transition-duration:.06s}
+/* voorkeuzetoetsen: drukknoppen die induiken, met een lampje dat warm aangloeit */
+.preset{box-shadow:0 1px 0 rgba(255,255,255,.06),0 4px 10px -6px rgba(0,0,0,.6);transition:transform .16s cubic-bezier(.3,1.4,.6,1),box-shadow .25s,background .3s,border-color .3s}
+.preset:active{transform:translateY(2px);box-shadow:inset 0 3px 9px rgba(0,0,0,.5);transition-duration:.06s}
+.preset[aria-pressed="true"]{box-shadow:inset 0 2px 7px rgba(0,0,0,.45),0 10px 26px -14px rgba(244,162,30,.7)}
+.preset .led{transition:background .5s ease,box-shadow .9s ease}
+.switch{transition:background .25s,transform .14s cubic-bezier(.3,1.4,.6,1)}
+.switch::after{transition:left .32s cubic-bezier(.34,1.5,.5,1)}
+/* naald en knop: komen met een klein beetje doorschieten tot rust, zoals aan een snaar */
+.dial .needle,.strip .nd{transition:left 1.3s cubic-bezier(.34,1.22,.52,1)}
+.knob{transition:transform 1.15s cubic-bezier(.34,1.22,.52,1)}
+/* display: warmt op bij afspelen, dimt bij pauze, en 'vangt' elke nieuwe zender */
+.readout{transition:opacity .9s ease,text-shadow .9s ease}
+.lcd.dim .readout{opacity:.6;text-shadow:0 0 14px rgba(244,162,30,.1)}
+.tune-in{animation:zhTune .75s cubic-bezier(.2,.8,.2,1)}
+.logo.swap-in{animation:zhSwap .5s cubic-bezier(.34,1.4,.5,1)}
+.play.breath{animation:zhBreath 3.6s ease-in-out infinite}
+/* Radio/Shuffle: de tekstkleur wisselt halverwege het glijden, daarna tikt de gekozen tekst even aan */
+@keyframes zhTick{0%{transform:scale(1)}40%{transform:scale(1.12)}70%{transform:scale(.97)}100%{transform:scale(1)}}
+.seg button{transition:transform .14s cubic-bezier(.3,1.4,.6,1),color .22s ease .14s}
+.seg button.tick > *{animation:zhTick .34s cubic-bezier(.3,1.4,.6,1) .36s both}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
-<body>
+<body class="mode-shuffle">
 
 <!-- ============ RADIO ============ -->
 <div class="wrap" id="screenRadio">
   <header class="top">
     <div class="brand">
       <h1>Zenderhopper</h1>
-      <p>Je eigen zenders, om de paar minuten willekeurig gewisseld.</p>
+      <p data-role="tagline"></p>
     </div>
-    <button class="btn" type="button" data-go="kiezen" aria-label="Zenders kiezen">
-      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
-      <span class="lbl">Zenders kiezen</span>
-    </button>
+    <div class="top-actions">
+      <div class="src" role="radiogroup" aria-label="Welke zenders">
+        <button type="button" role="radio" data-src="fm" aria-checked="true">Nederland.FM · <span data-role="cntFm"></span></button>
+        <button type="button" role="radio" data-src="alles" aria-checked="false">Alle zenders · <span data-role="cntAll"></span></button>
+      </div>
+      <button class="btn" type="button" data-go="kiezen" aria-label="Zenders kiezen">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
+        <span class="lbl">Zenders kiezen</span>
+      </button>
+    </div>
   </header>
 
-  <section class="radio" aria-label="Radio">
-    <div class="lcd">
+  <section class="device" aria-label="Radio">
+    <div class="lcd" id="lcdMain">
+      <div class="edge r" aria-hidden="true"></div>
+      <div class="edge l" aria-hidden="true"></div>
       <div class="lcd-top">
-        <div class="lcd-status">
+        <div class="lcd-left">
+          <div class="seg" role="radiogroup" aria-label="Modus">
+            <button type="button" role="radio" data-mode="radio" aria-checked="false">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="2.5"/><path d="M7 8l9-4"/><circle cx="8.5" cy="14" r="2.5"/><path d="M14 12.5h4M14 15.5h4"/></svg>
+              <span class="lbl">Radio</span>
+            </button>
+            <button type="button" role="radio" data-mode="shuffle" aria-checked="true">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+              <span class="lbl">Shuffle</span>
+            </button>
+          </div>
           <span class="status" data-role="status" data-s="off"><i></i><span data-role="statusText">Uit</span></span>
-          <span class="count" data-role="rotCount"></span>
+          <span class="count" data-role="modeInfo"></span>
         </div>
-        <label class="wissel"><span>Wissel elke</span><input type="number" min="0.25" max="180" step="0.25" inputmode="decimal" data-role="minutes" aria-label="Wissel elke zoveel minuten"><span>min</span></label>
-        <div class="lcd-actions">
+        <div class="lcd-right">
+          <div class="loc-wrap">
+            <button class="ghost loc-btn" type="button" id="locBtn" aria-expanded="false">
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0114 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+              <span data-role="locName">Amsterdam</span>
+              <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <!-- eerste bezoek: kleine vraag onder de locatieknop -->
+            <div class="note-card" id="welcomeTip" role="dialog" aria-labelledby="welkomVraag" hidden>
+              <span class="note-arrow" aria-hidden="true"></span>
+              <div class="note-head">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0114 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+                <b id="welkomVraag">Waar luister je?</b>
+              </div>
+              <span class="note-text">Dan kloppen de FM-frequenties op de schaal met wat jij ontvangt.</span>
+              <div class="note-btns">
+                <button class="note-primary" type="button" data-act="geo">
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                  <span data-role="geoLabel">Gebruik mijn locatie</span>
+                </button>
+                <button class="note-secondary" type="button" id="declineLoc">Liever niet</button>
+              </div>
+              <button class="note-link" type="button" id="typePlace">Of typ je plaats of postcode</button>
+              <div class="note-err" data-role="geoErr" role="alert" hidden></div>
+            </div>
+            <!-- na 'Liever niet': kort bericht, verdwijnt vanzelf -->
+            <div class="note-card row" id="declinedTip" role="status" hidden>
+              <span class="note-arrow" aria-hidden="true"></span>
+              <span class="note-text"><b>Geen probleem, je mist geen zenders.</b> De frequenties zijn nu die van Amsterdam. Hier kies je later je eigen plaats.</span>
+              <button class="note-x" type="button" id="declinedClose" aria-label="Melding sluiten">
+                <svg aria-hidden="true" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#14181D" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </button>
+            </div>
+          </div>
           <button class="ghost icon" type="button" data-act="mini" aria-label="Zwevende mini-speler openen" title="Zwevende mini-speler">
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11.5" width="6.5" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
           </button>
@@ -368,32 +581,68 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
           </button>
         </div>
       </div>
-      <div class="now">
-        <div class="now-id">
-          <span data-role="logo" data-size="xl"></span>
-          <div class="now-text">
-            <div class="now-name" data-role="name">Klaar om te zappen</div>
-            <div class="now-meta" data-role="meta"></div>
+
+      <div class="loc-pop" id="locPop" role="dialog" aria-label="Locatie kiezen" hidden>
+        <h3>Waar luister je?</h3>
+        <p id="locIntro"></p>
+        <button class="loc-geo" type="button" data-act="geo">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="var(--amber)" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          <span data-role="geoLabel">Gebruik mijn locatie</span>
+        </button>
+        <form class="loc-form" id="locForm" autocomplete="off">
+          <input type="text" id="locInput" placeholder="Bijv. Zwolle of 8011 AB" aria-label="Woonplaats of postcode">
+          <button type="submit">Zoek</button>
+        </form>
+        <div class="loc-err" id="locErr" role="alert" hidden></div>
+        <div class="loc-quick" id="locQuick"></div>
+      </div>
+
+      <div class="main">
+        <div class="idcol">
+          <div class="freq"><span class="unit">FM</span><span class="readout tab" data-role="readout">—</span><span class="unit u-mhz">MHz<span class="tip q" tabindex="0" role="button" data-role="freqTip" aria-label="Waarom is dit een voorbeeld? Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam." hidden>?<span class="tipbox" role="tooltip">Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam. Waar jij luistert kan dezelfde zender op een andere frequentie zitten. Kies je plaats via de locatieknop op de radio.</span></span></span></div>
+          <div class="idrow">
+            <span data-role="logo" data-size="xl"></span>
+            <div style="min-width:0">
+              <div class="name" data-role="name">Klaar om te zappen</div>
+              <div class="meta" data-role="meta"></div>
+            </div>
           </div>
         </div>
-        <div class="transport">
-          <button class="play" type="button" data-act="toggle" aria-label="Afspelen"></button>
-          <button class="pill-dark" id="nextBtn" type="button" data-act="hop" aria-label="Willekeurige zender">
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
-            <span class="lbl">Willekeurige zender</span>
-          </button>
+        <div class="tcol">
+          <div class="trow">
+            <button class="rbtn only-radio" type="button" data-act="prev" aria-label="Vorige zender">
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 5.5v13L8.5 12zM5.5 5.5h2.5v13H5.5z"/></svg>
+            </button>
+            <div class="ring" data-role="ring"><div class="ring-in"><button class="play" type="button" data-act="toggle" aria-label="Afspelen"></button></div></div>
+            <button class="rbtn only-radio" type="button" data-act="next" aria-label="Volgende zender">
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5.5v13l9.5-6.5zM16 5.5h2.5v13H16z"/></svg>
+            </button>
+            <button class="rbtn only-shuffle" type="button" data-act="hop" aria-label="Nu naar een willekeurige zender">
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+            </button>
+          </div>
           <label class="vol">
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11"/></svg>
             <input type="range" min="0" max="1" step="0.01" data-role="vol" aria-label="Volume">
           </label>
         </div>
       </div>
+
+      <div class="presets only-radio" role="group" aria-label="Voorkeuzetoetsen" data-role="presets"></div>
+      <div class="hierna only-shuffle">
+        <div class="hn-id">
+          <span data-role="nextLogo"></span>
+          <div style="min-width:0;flex:1"><div class="hn-cap">Hierna</div><div class="hn-name" data-role="next">—</div></div>
+        </div>
+        <div class="hn-bar"><div class="bar" aria-hidden="true"><span data-role="bar"></span></div><span class="tab" style="font:14px var(--f-mono);color:#D8DCE0;white-space:nowrap" data-role="clock"></span></div>
+        <label class="wissel"><span>Wissel elke</span><input type="number" min="0.25" max="180" step="0.25" inputmode="decimal" data-role="minutes" aria-label="Wissel elke zoveel minuten"><span>min</span></label>
+      </div>
+
       <div class="dial" id="dialMain"></div>
       <div class="lcd-foot">
-        <span class="hint">Sleep de naald of klik een zender op de schaal</span>
-        <span>Hierna: <b data-role="next">—</b> · <span class="tab" data-role="clock"></span></span>
+        <span class="hint" data-role="footHint"></span>
+        <span data-role="dialCount"></span>
       </div>
-      <div class="progress" data-role="progress"></div>
     </div>
   </section>
 
@@ -424,7 +673,7 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
       </button>
       <div>
         <h1>Zenders kiezen</h1>
-        <p>Tik op een tegel om hem op je radio te zetten of eraf te halen. Met de afspeelknop luister je eerst even.</p>
+        <p>Tik op een tegel om hem in Mijn lijst te zetten of eruit te halen. Met de afspeelknop luister je eerst even.</p>
       </div>
     </div>
     <div class="np-pill">
@@ -435,6 +684,10 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
   </header>
 
   <div class="kz-controls">
+    <div class="src" role="radiogroup" aria-label="Welke zenders">
+      <button type="button" role="radio" data-src="fm" aria-checked="true">Nederland.FM · <span data-role="cntFm"></span></button>
+      <button type="button" role="radio" data-src="alles" aria-checked="false">Alle zenders · <span data-role="cntAll"></span></button>
+    </div>
     <label class="search">
       <span class="sr">Zoek een zender</span>
       <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
@@ -444,7 +697,7 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
   </div>
 
   <div class="tiles" id="tiles"></div>
-  <div class="empty" id="tilesEmpty" hidden>Geen zender uit de lijst gevonden. Kijk hieronder in de zenderdatabase, of kies "Alle zenders".</div>
+  <div class="empty" id="tilesEmpty" hidden>Geen zender gevonden. Kijk hieronder in de zenderdatabase, of kies "Alle zenders".</div>
 
   <section aria-labelledby="dbTitle" style="display:flex;flex-direction:column;gap:12px">
     <div class="db-head">
@@ -484,11 +737,11 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
       <input type="file" id="importFile" accept=".json,application/json" hidden>
       <button class="linkbtn" type="button" id="resetBtn">Standaardlijst herstellen</button>
     </div>
-    <p class="note">De extra zenders komen uit de open database van radio-browser.info.</p>
+    <p class="note">Zenders van nederland.fm en radio.nl, aangevuld met de open database van radio-browser.info. FM-frequenties: Antenneregister van de RDI. Plaatsen en postcodes: PDOK.</p>
   </div>
 
   <div class="dockbar">
-    <span><b id="dockCount">0 zenders</b> op je radio · <span id="dockRot">0</span> in rotatie</span>
+    <span><b id="dockCount">0 zenders</b> in Mijn lijst · <span id="dockRot">0</span> in rotatie</span>
     <button class="cta" type="button" data-go="radio">Klaar, naar de radio
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </button>
@@ -497,15 +750,20 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
 
 <!-- ============ VOLLEDIG SCHERM ============ -->
 <div class="fs" id="screenFs" hidden>
-  <section class="fs-screen" id="fsScreen" aria-label="Radio, volledig scherm">
-    <div class="fs-top">
-      <div class="lcd-status">
+  <section class="lcd" id="lcdFs" aria-label="Radio, volledig scherm">
+    <div class="edge r" aria-hidden="true"></div>
+    <div class="edge l" aria-hidden="true"></div>
+    <div class="lcd-top">
+      <div class="lcd-left">
+        <div class="seg" role="radiogroup" aria-label="Modus">
+          <button type="button" role="radio" data-mode="radio" aria-checked="false"><span class="lbl">Radio</span></button>
+          <button type="button" role="radio" data-mode="shuffle" aria-checked="true"><span class="lbl">Shuffle</span></button>
+        </div>
         <span class="status" data-role="status" data-s="off"><i></i><span data-role="statusText">Uit</span></span>
-        <span>Zenderhopper</span>
       </div>
       <span class="fs-time tab" id="fsTime"></span>
-      <div class="lcd-actions">
-        <label class="wissel"><span>Wissel elke</span><input type="number" min="0.25" max="180" step="0.25" inputmode="decimal" data-role="minutes" aria-label="Wissel elke zoveel minuten"><span>min</span></label>
+      <div class="lcd-right">
+        <label class="wissel only-shuffle"><span>Wissel elke</span><input type="number" min="0.25" max="180" step="0.25" inputmode="decimal" data-role="minutes" aria-label="Wissel elke zoveel minuten"><span>min</span></label>
         <button class="ghost" type="button" data-act="fs" style="height:40px">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
           Scherm verlaten
@@ -514,27 +772,33 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
     </div>
     <div class="fs-main">
       <div class="fs-left">
-        <div class="fs-freq"><span class="fs-unit">FM</span><span class="fs-readout tab" data-role="readout">98.0</span><span class="fs-unit">MHz</span></div>
-        <div class="fs-id">
-          <span data-role="logo" data-size="xxl"></span>
+        <div class="freq"><span class="unit">FM</span><span class="readout tab" data-role="readout">—</span><span class="unit u-mhz">MHz<span class="tip q" tabindex="0" role="button" data-role="freqTip" aria-label="Waarom is dit een voorbeeld? Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam." hidden>?<span class="tipbox" role="tooltip">Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam. Waar jij luistert kan dezelfde zender op een andere frequentie zitten. Kies je plaats via de locatieknop op de radio.</span></span></span></div>
+        <div class="idrow">
+          <span data-role="logo" data-size="xl"></span>
           <div style="min-width:0">
-            <div class="fs-name" data-role="name"></div>
-            <div class="fs-meta" data-role="meta"></div>
+            <div class="name" data-role="name"></div>
+            <div class="meta" data-role="meta"></div>
           </div>
         </div>
-        <div class="fs-next">
-          <div class="bar" aria-hidden="true"><span data-role="bar"></span></div>
+        <div class="fs-next only-shuffle">
+          <div class="bar" aria-hidden="true" style="flex:1 1 200px"><span data-role="bar"></span></div>
           <span>Hierna <b data-role="next">—</b> · <span class="tab" data-role="clock"></span></span>
         </div>
         <div class="fs-transport">
-          <button class="play xl" type="button" data-act="toggle" aria-label="Afspelen"></button>
-          <button class="pill-dark xl" type="button" data-act="hop">
+          <button class="play" type="button" data-act="toggle" aria-label="Afspelen"></button>
+          <button class="rbtn only-radio" type="button" data-act="prev" aria-label="Vorige zender">
+            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 5.5v13L8.5 12zM5.5 5.5h2.5v13H5.5z"/></svg>
+          </button>
+          <button class="rbtn only-radio" type="button" data-act="next" aria-label="Volgende zender">
+            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5.5v13l9.5-6.5zM16 5.5h2.5v13H16z"/></svg>
+          </button>
+          <button class="pill-dark only-shuffle" type="button" data-act="hop">
             <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
             Willekeurige zender
           </button>
           <label class="vol">
             <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11"/></svg>
-            <input type="range" min="0" max="1" step="0.01" data-role="vol" aria-label="Volume" style="width:170px">
+            <input type="range" min="0" max="1" step="0.01" data-role="vol" aria-label="Volume">
           </label>
         </div>
       </div>
@@ -548,7 +812,7 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
         </div>
       </div>
     </div>
-    <div class="presets" role="group" aria-label="Voorkeuzetoetsen" id="presets"></div>
+    <div class="presets" role="group" aria-label="Voorkeuzetoetsen" data-role="presets"></div>
     <div class="dial" id="dialFs"></div>
   </section>
 </div>
@@ -574,11 +838,12 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
     </div>
     <div class="sheet-body">
       <div>
-        <div class="cap">Plek op de schaal</div>
+        <div class="cap">Op de FM-schaal</div>
         <div class="spot" id="mSpot" aria-hidden="true"></div>
+        <div class="mast" id="mMast"></div>
       </div>
       <div class="facts">
-        <div class="fact"><div class="cap">Schaal</div><div class="fv mono" id="mFreq"></div></div>
+        <div class="fact"><div class="cap">Frequentie</div><div class="fv mono" id="mFreq"></div></div>
         <div class="fact"><div class="cap">Status</div><div class="fv" id="mStatus"></div></div>
         <div class="fact"><div class="cap">Rotatie</div><div class="fv" id="mRot"></div></div>
       </div>
@@ -588,7 +853,7 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
           <span id="mPlayLbl">Nu afspelen</span>
         </button>
         <button class="outline" type="button" id="mRotBtn"></button>
-        <button class="linkbtn danger" type="button" id="mRemove">Van je radio halen</button>
+        <button class="linkbtn" type="button" id="mListBtn"></button>
       </div>
     </div>
   </div>
@@ -614,8 +879,8 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
       <div class="strip" data-role="strip" aria-hidden="true"></div>
       <div class="mini-ctrl">
         <button class="play" type="button" data-act="toggle" aria-label="Afspelen"></button>
-        <button class="icon-dark" type="button" data-act="hop" aria-label="Willekeurige zender">
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2EFE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+        <button class="icon-dark" type="button" data-act="smartNext" aria-label="Volgende zender">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="#F2EFE7"><path d="M6 5.5v13l9.5-6.5zM16 5.5h2.5v13H16z"/></svg>
         </button>
         <span class="t tab" data-role="clock"></span>
       </div>
@@ -623,53 +888,61 @@ input.freq:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;bord
   </div>
 </div>
 
+<!-- ============ OVER ZENDERHOPPER ============ -->
+<button class="help-btn" type="button" id="helpBtn" aria-expanded="false" aria-controls="helpPanel" aria-label="Over Zenderhopper" title="Over Zenderhopper">?</button>
+<div class="help-scrim" id="helpScrim" hidden></div>
+<div class="help-panel" id="helpPanel" role="dialog" aria-labelledby="overTitel" hidden>
+  <div class="help-top">
+    <div class="help-head">
+      <span class="help-cap">Over Zenderhopper</span>
+      <button class="help-x" type="button" id="helpClose" aria-label="Info sluiten">
+        <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9CED4" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <h2 id="overTitel">Gratis goede radio, mooi in beeld.</h2>
+    <p>Alle Nederlandse zenders op één plek. Luister naar één zender, of laat Zenderhopper om de paar minuten wisselen tussen je favorieten.</p>
+    <div class="help-points">
+      <div class="help-point"><span class="help-ic" aria-hidden="true">€0</span><div><b>Gratis</b><span>Geen account, geen abonnement en geen app. Site openen en luisteren.</span></div></div>
+      <div class="help-point"><span class="help-ic" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M8.5 8.5a5 5 0 000 7M15.5 8.5a5 5 0 010 7M5.6 5.6a9 9 0 000 12.8M18.4 5.6a9 9 0 010 12.8"/></svg></span><div><b>Goede radio</b><span><span data-role="helpCount">101</span> zenders van nederland.fm en radio.nl, op de frequentie waarop je ze echt ontvangt.</span></div></div>
+      <div class="help-point"><span class="help-ic" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8.5 20h7M12 16.5V20"/></svg></span><div><b>Mooi om te laten staan</b><span>Zet hem op volledig scherm en je tv, monitor of tablet wordt een radio die je gewoon aan laat staan.</span></div></div>
+    </div>
+  </div>
+  <div class="help-tech">
+    <span class="help-cap">De techniek</span>
+    <dl>
+      <dt>Geluid</dt><dd>Rechtstreeks van de omroepen (MP3, AAC, HLS). Twee spelers vloeien in elkaar over, dus geen stilte bij het wisselen.</dd>
+      <dt>Frequenties</dt><dd><span data-role="helpMasts">83</span> zendmasten uit het Antenneregister van de RDI. Per zender kiest de site de mast die jij het best ontvangt.</dd>
+      <dt>Locatie</dt><dd>Woonplaatsen en postcodes via PDOK (Kadaster). Standaard Amsterdam.</dd>
+      <dt>Zenders</dt><dd>Lijsten van nederland.fm en radio.nl, plus de open database van radio-browser.info.</dd>
+      <dt>Privacy</dt><dd>Je lijst en instellingen blijven in je eigen browser. Geen account, geen tracking.</dd>
+      <dt>Gebouwd met</dt><dd>HTML, CSS en JavaScript zonder framework, op GitHub Pages.</dd>
+    </dl>
+    <div class="help-foot">
+      <span>Sneltoetsen: <b>spatie · N · F · Esc</b></span>
+      <a href="https://github.com/Luka-F/zenderhopper" target="_blank" rel="noopener">Broncode op GitHub
+        <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="zenders-data.js"></script>
 <script>
 (() => {
 'use strict';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const D = window.ZH_DATA || { stations: [], sites: [], places: [], pc2: {} };
+const CATALOG = D.stations;
 const API_HOSTS = ['https://de1.api.radio-browser.info', 'https://de2.api.radio-browser.info', 'https://all.api.radio-browser.info'];
-const STW = 'https://playerservices.streamtheworld.com/api/livestream-redirect/';
-const NPO = 'https://icecast.omroep.nl/';
-
-/* Vaste catalogus met gecontroleerde streams. def = standaard op je radio, on = standaard in rotatie. */
-const CATALOG = [
-  { id: 'r2', fam: 'NPO', name: 'NPO Radio 2', short: 'RADIO 2', genre: 'Pop & classics', mono: '2', color: '#B23A24', url: NPO + 'radio2-bb-mp3', def: 1, on: 1 },
-  { id: '3fm', fam: 'NPO', name: 'NPO 3FM', short: '3FM', genre: 'Pop & alternatief', mono: '3FM', color: '#B4561A', url: NPO + '3fm-bb-mp3', def: 1, on: 1 },
-  { id: 'funx', fam: 'NPO', name: 'NPO FunX', short: 'FUNX', genre: 'Urban & hiphop', mono: 'FX', color: '#167567', url: NPO + 'funx-bb-mp3', def: 1, on: 1 },
-  { id: 'r1', fam: 'NPO', name: 'NPO Radio 1', short: 'RADIO 1', genre: 'Nieuws & sport', mono: '1', color: '#4E5B68', url: NPO + 'radio1-bb-mp3', def: 1, on: 0 },
-  { id: 'klas', fam: 'NPO', name: 'NPO Klassiek', short: 'KLASSIEK', genre: 'Klassiek', mono: 'KL', color: '#5E3F7A', url: NPO + 'radio4-bb-mp3', def: 1, on: 0 },
-  { id: 'r5', fam: 'NPO', name: 'NPO Radio 5', short: 'RADIO 5', genre: 'Oldies & classics', mono: '5', color: '#2E6E8E', url: NPO + 'radio5-bb-mp3', def: 0, on: 1 },
-  { id: '538', fam: '538', name: 'Radio 538', short: '538', genre: 'Hits & dance', mono: '538', color: '#1D5E9A', url: STW + 'RADIO538.mp3', def: 1, on: 1 },
-  { id: '538ns', fam: '538', name: '538 Non-Stop', short: '538 NS', genre: 'Hits non-stop', mono: '538', color: '#2A4F8F', url: STW + 'TLPSTR09.mp3', def: 0, on: 1 },
-  { id: '538t50', fam: '538', name: '538 Top 50', short: 'TOP 50', genre: 'Hits', mono: '50', color: '#1F3F7A', url: STW + 'TLPSTR13.mp3', def: 0, on: 1 },
-  { id: '538dd', fam: '538', name: '538 Dance Department', short: '538 DANCE', genre: 'Dance', mono: 'DD', color: '#3A3F9A', url: STW + 'TLPSTR01.mp3', def: 0, on: 1 },
-  { id: 'q', fam: 'Qmusic', name: 'Qmusic', short: 'QMUSIC', genre: 'Hits', mono: 'Q', color: '#B01F35', url: 'https://stream.qmusic.nl/qmusic/mp3', def: 1, on: 1 },
-  { id: 'qns', fam: 'Qmusic', name: 'Qmusic Non-Stop', short: 'Q NS', genre: 'Hits non-stop', mono: 'Q', color: '#8F1A2E', url: 'https://icecast-qmusicnl-cdp.triple-it.nl/Qmusic_nl_nonstop_96.mp3', def: 0, on: 1 },
-  { id: 'qfout', fam: 'Qmusic', name: 'Qmusic Foute Uur', short: 'FOUTE UUR', genre: 'Foute hits', mono: 'FU', color: '#B8461C', url: 'https://icecast-qmusicnl-cdp.triple-it.nl/Qmusic_nl_fouteuur_96.mp3', def: 0, on: 1 },
-  { id: 'sky', fam: 'Sky Radio', name: 'Sky Radio', short: 'SKY', genre: 'Hits non-stop', mono: 'SKY', color: '#1F6E96', url: STW + 'SKYRADIO.mp3', def: 1, on: 1 },
-  { id: 'sky80', fam: 'Sky Radio', name: "Sky Radio 80's Hits", short: 'SKY 80S', genre: '80s hits', mono: '80', color: '#1A5A7E', url: STW + 'SRGSTR04.mp3', def: 0, on: 1 },
-  { id: 'skyx', fam: 'Sky Radio', name: 'Sky Radio Christmas', short: 'SKY XMAS', genre: 'Kerst', mono: 'X', color: '#1E6B4A', url: STW + 'SRGSTR08.mp3', def: 0, on: 1 },
-  { id: 'r10', fam: 'Radio 10', name: 'Radio 10', short: 'RADIO 10', genre: 'Classics', mono: '10', color: '#6B3590', url: STW + 'RADIO10.mp3', def: 1, on: 1 },
-  { id: 'r1060', fam: 'Radio 10', name: "Radio 10 60's & 70's", short: '10 60-70', genre: '60s & 70s classics', mono: '60', color: '#5A2E7A', url: STW + 'TLPSTR18.mp3', def: 0, on: 1 },
-  { id: 'r1080', fam: 'Radio 10', name: "Radio 10 80's Hits", short: '10 80S', genre: '80s hits', mono: '80', color: '#7A3A8F', url: STW + 'TLPSTR20.mp3', def: 0, on: 1 },
-  { id: 'r1090', fam: 'Radio 10', name: "Radio 10 90's Hits", short: '10 90S', genre: '90s hits', mono: '90', color: '#4E2A6E', url: STW + 'TLPSTR22.mp3', def: 0, on: 1 },
-  { id: 'ver', fam: 'Veronica', name: 'Radio Veronica', short: 'VERONICA', genre: 'Rock & classics', mono: 'VER', color: '#2F7349', url: STW + 'VERONICA.mp3', def: 1, on: 1 },
-  { id: 'slam', fam: 'SLAM!', name: 'SLAM!', short: 'SLAM!', genre: 'Dance', mono: 'SL', color: '#B02773', url: 'https://stream.slam.nl/slam_mp3', def: 1, on: 1 },
-  { id: 'slamns', fam: 'SLAM!', name: 'SLAM! Non Stop', short: 'SLAM NS', genre: 'Dance non-stop', mono: 'SL', color: '#8E2060', url: 'https://stream.radiocorp.nl/web10_mp3', def: 0, on: 1 },
-  { id: 'joe', fam: 'JOE', name: 'JOE', short: 'JOE', genre: '80s & 90s', mono: 'JOE', color: '#3D4FAE', url: 'https://stream.joe.nl/joe/mp3', def: 1, on: 1 },
-  { id: 'joens', fam: 'JOE', name: 'JOE Non-Stop', short: 'JOE NS', genre: '80s & 90s non-stop', mono: 'JOE', color: '#2F3F8E', url: 'https://stream.joe.nl/nonstop/mp3', def: 0, on: 1 },
-  { id: 'nl', fam: 'Overig', name: '100% NL', short: '100% NL', genre: 'Nederlandstalig', mono: 'NL', color: '#8A6410', url: 'https://stream.100p.nl/100pctnl.mp3', def: 1, on: 1 },
-  { id: 'kink', fam: 'Overig', name: 'KINK', short: 'KINK', genre: 'Alternatief & rock', mono: 'KI', color: '#2B2B2B', url: STW + 'KINK.mp3', def: 1, on: 1 },
-  { id: 'sub', fam: 'Overig', name: 'Sublime', short: 'SUBLIME', genre: 'Soul & jazz', mono: 'SU', color: '#8E5A1F', url: STW + 'SUBLIME.mp3', def: 1, on: 1 },
-  { id: 'arrow', fam: 'Overig', name: 'Arrow Classic Rock', short: 'ARROW', genre: 'Rock', mono: 'AR', color: '#7E2A2A', url: 'https://stream.gal.io/arrow', def: 1, on: 1 },
-  { id: 'bnr', fam: 'Overig', name: 'BNR Nieuwsradio', short: 'BNR', genre: 'Nieuws', mono: 'BNR', color: '#55622F', url: 'https://stream.bnr.nl/bnr_mp3_128_20', def: 1, on: 0 }
-];
-const FAMS = ['Alle zenders', 'Op mijn radio', 'NPO', '538', 'Qmusic', 'Sky Radio', 'Radio 10', 'Veronica', 'SLAM!', 'JOE', 'Overig', 'Eigen'];
+const PDOK = 'https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?';
+const FAMS = ['Alle zenders', 'Mijn lijst', 'NPO', '538', 'Qmusic', 'Sky Radio', 'Radio 10', 'Veronica', '100% NL', 'SLAM!', 'JOE', 'Regionaal', 'Overig', 'Eigen'];
 const PALETTE = ['#9A3B2A', '#1F5F8B', '#2F6E4A', '#6B3A8C', '#8A5A1E', '#2E5E6E', '#A13A5C', '#3F4FA0', '#5A6427', '#7A2E2E', '#1F6F66', '#5B4A8A'];
-const LO = 87.5, HI = 108;
+const LO = 87.5, HI = 108, EDGE = 111;   /* 108–111: de rand; verder schuiven brengt je bij de online zenders */
+const AMS = { name: 'Amsterdam', lat: 52.3734, lon: 4.9045 };
+const QUICK = ['Amsterdam', 'Rotterdam', 'Utrecht', 'Groningen', 'Zwolle', 'Eindhoven', 'Maastricht'];
 
 /* ---------- hulpjes ---------- */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -696,7 +969,7 @@ function shade(hex, f) {
   const mix = (v, t) => Math.round(v * (1 - f) + t * f).toString(16).padStart(2, '0');
   return '#' + mix(n >> 16, 12) + mix((n >> 8) & 255, 14) + mix(n & 255, 18);
 }
-const normUrl = u => String(u || '').trim().replace(/^https?:\/\//i, '').replace(/\/$/, '').toLowerCase();
+const normUrl = u => String(u || '').trim().replace(/^https?:\/\//i, '').split('?')[0].replace(/\/$/, '').toLowerCase();
 function store(k, v) { try { localStorage.setItem('zenderhopper.' + k, JSON.stringify(v)); } catch (e) {} }
 function restore(k) { try { const v = localStorage.getItem('zenderhopper.' + k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -706,6 +979,8 @@ const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v1
 const ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 5h4v14h-4zM13.5 5h4v14h-4z"/></svg>';
 const ICON_PLUS = '<svg class="plus" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 const ICON_CHECK = '<svg class="chk" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A1206" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const CHEV_R = '<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
+const CHEV_L = '<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
 
 let toastTimer;
 function toast(msg) {
@@ -723,31 +998,91 @@ document.addEventListener('error', e => {
   if (t && t.classList && t.classList.contains('logo-img')) { const span = t.parentElement; span.textContent = span.dataset.ini; }
 }, true);
 
-/* ---------- data ---------- */
+/* ---------- echte FM-frequenties per locatie ---------- */
+function distKm(a, b, c, d) {
+  const p = Math.PI / 180;
+  const x = Math.sin((c - a) * p / 2) ** 2 + Math.cos(a * p) * Math.cos(c * p) * Math.sin((d - b) * p / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(x));
+}
+/* "IJsselstein/Lopik (Gerbrandytoren)" → plaats "IJsselstein/Lopik" en toren "Gerbrandytoren"; zonder torennaam: "Zendmast Zwolle" */
+const mastName = n => String(n).split(' (')[0];
+const mastTower = n => { const m = / \(([^)]*)\)$/.exec(String(n)); return m && !/^\d/.test(m[1]) ? m[1] : 'Zendmast ' + mastName(n); };
+function nearestPlace(lat, lon) {
+  let best = null, bd = 1e9;
+  for (const p of D.places) { const d = distKm(lat, lon, p[2], p[3]); if (d < bd) { bd = d; best = p; } }
+  return best && bd < 25 ? best[0] : null;
+}
+/* per zender de mast met de beste ontvangst: zendvermogen en antennehoogte tegen afstand; onder 20 = geen bruikbare FM */
+function bestFm(lat, lon) {
+  const cand = {};
+  for (const s of D.sites) {
+    const d = Math.max(1, distKm(lat, lon, s.la, s.lo));
+    for (const e of s.s) {
+      const sc = 10 * Math.log10(e[2] * 1000) + 20 * Math.log10(e[3]) - 40 * Math.log10(d);
+      (cand[e[0]] = cand[e[0]] || []).push({ mhz: e[1], site: s.n, km: Math.round(d), score: sc });
+    }
+  }
+  const out = {};
+  for (const id in cand) {
+    const c = cand[id].sort((a, b) => b.score - a.score);
+    if (c[0].score < 20) continue;
+    const alt = c.find(x => x.mhz !== c[0].mhz && x.score >= c[0].score - 3);
+    out[id] = Object.assign({}, c[0], { alt: alt || null });
+  }
+  return out;
+}
+function findLocal(q) {
+  const t = String(q || '').trim();
+  if (!t) return null;
+  const pc = t.replace(/\s+/g, '').match(/^(\d{4})([a-zA-Z]{2})?$/);
+  if (pc) {
+    const p = D.pc2[pc[1].slice(0, 2)];
+    return p ? { name: 'Postcode ' + pc[1] + (pc[2] ? ' ' + pc[2].toUpperCase() : ''), lat: p[0], lon: p[1] } : null;
+  }
+  const low = t.toLowerCase().replace(/^den bosch$/, "'s-hertogenbosch").replace(/^den haag$/, "'s-gravenhage");
+  const hit = D.places.find(p => p[0].toLowerCase() === low) || D.places.find(p => p[0].toLowerCase().startsWith(low));
+  return hit ? { name: hit[0], lat: hit[2], lon: hit[3] } : null;
+}
+async function geocode(q) {
+  try {
+    const p = new URLSearchParams({ q: q.trim(), rows: '1', fq: 'type:(woonplaats OR postcode)', fl: 'weergavenaam,type,centroide_ll,woonplaatsnaam,postcode' });
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 7000);
+    const r = await fetch(PDOK + p, { signal: ctl.signal }); clearTimeout(t);
+    if (!r.ok) throw new Error('pdok');
+    const doc = (await r.json()).response.docs[0];
+    if (!doc) return findLocal(q);
+    const [lon, lat] = doc.centroide_ll.match(/-?[\d.]+/g).map(Number);
+    const name = doc.type === 'postcode' ? (doc.postcode || '') + ' ' + (doc.woonplaatsnaam || '') : (doc.woonplaatsnaam || doc.weergavenaam.split(',')[0]);
+    return { name: name.trim(), lat, lon };
+  } catch (e) {
+    return findLocal(q);   /* geen verbinding met PDOK: zoek in de ingebouwde plaatsenlijst */
+  }
+}
+
+/* ---------- Mijn lijst ---------- */
 const catById = id => CATALOG.find(c => c.id === id);
 function fromCatalog(c, on) {
-  return { id: c.id, name: c.name, short: c.short, genre: c.genre, mono: c.mono, color: c.color, url: c.url, fam: c.fam, on: on ?? !!c.on, hls: false, favicon: '', custom: false };
+  return { id: c.id, name: c.name, short: c.short, genre: c.genre, mono: c.mono, color: c.color, url: c.url, fam: c.fam, on: on ?? (c.def ? !!c.on : true), hls: /\.m3u8(\?|$)/i.test(c.url), favicon: '', custom: false };
 }
 function makeCustom(o) {
   const name = String(o.name || 'Naamloos').trim().slice(0, 80) || 'Naamloos';
   return {
     id: typeof o.id === 'string' && o.id ? o.id : 'u-' + hash(o.url).toString(36),
-    name, short: o.short || shortName(name), genre: (o.genre || o.tags || o.meta || 'Eigen zender').slice(0, 60),
+    name, short: o.short || shortName(name), genre: String(o.genre || o.tags || o.meta || 'Eigen zender').slice(0, 60),
     mono: o.mono || initials(name), color: o.color || colorFor(name), url: String(o.url).trim(), fam: 'Eigen',
     on: o.on ?? o.enabled ?? true, hls: !!o.hls, favicon: isWeb(o.favicon) ? o.favicon : '', custom: true,
     httpOnly: !!o.httpOnly, fail: typeof o.fail === 'number' ? o.fail : undefined
   };
 }
-function defaultList() { return CATALOG.filter(c => c.def).map(c => fromCatalog(c)); }
+const defaultList = () => CATALOG.filter(c => c.def).map(c => fromCatalog(c));
 function sanitizeList(arr) {
   const out = [], seen = new Set();
   for (const s of arr || []) {
     if (!s || typeof s.name !== 'string' || !isWeb(s.url)) continue;
     const cat = catById(s.id) || CATALOG.find(c => normUrl(c.url) === normUrl(s.url));
-    let st = cat ? Object.assign(fromCatalog(cat, s.on ?? s.enabled ?? true), { url: s.url, httpOnly: !!s.httpOnly }) : makeCustom(s);
-    if (cat && normUrl(s.url) !== normUrl(cat.url)) st.url = cat.url;
+    const st = cat ? fromCatalog(cat, s.on ?? s.enabled ?? true) : makeCustom(s);
     if (typeof s.fail === 'number') st.fail = s.fail;
-    while (seen.has(st.id)) st.id += 'x';
+    if (seen.has(st.id)) continue;
     seen.add(st.id); out.push(st);
   }
   return out;
@@ -756,32 +1091,67 @@ function loadList() {
   const v2 = restore('list2');
   if (Array.isArray(v2)) return sanitizeList(v2);
   const v1 = restore('stations');
-  if (Array.isArray(v1) && v1.length) return sanitizeList(v1.map(s => ({ ...s, on: s.enabled !== false })));
+  if (Array.isArray(v1) && v1.length) return sanitizeList(v1.map(s => Object.assign({}, s, { on: s.enabled !== false })));
   return defaultList();
 }
 let list = loadList();
-const oldSettings = restore('settings') || {};
+const old = restore('settings') || {};
 const settings = {
-  minutes: Number(oldSettings.minutes) > 0 ? Number(oldSettings.minutes) : (Number(oldSettings.min) > 0 ? Number(oldSettings.min) : 3),
-  volume: typeof oldSettings.volume === 'number' ? oldSettings.volume : 0.8,
-  listOpen: oldSettings.listOpen !== false,
-  compactListOpen: !!oldSettings.compactListOpen
+  minutes: Number(old.minutes) > 0 ? Number(old.minutes) : (Number(old.min) > 0 ? Number(old.min) : 30),
+  volume: typeof old.volume === 'number' ? old.volume : 0.8,
+  listOpen: old.listOpen !== false,
+  compactListOpen: !!old.compactListOpen,
+  mode: old.mode === 'radio' ? 'radio' : 'shuffle',
+  source: old.source === 'alles' ? 'alles' : 'fm',
+  /* eigen plaats; null = niet gekozen, dan is Amsterdam de standaard */
+  myLoc: old.myLoc && typeof old.myLoc.lat === 'number' && typeof old.myLoc.lon === 'number' && typeof old.myLoc.name === 'string' ? old.myLoc : null,
+  asked: old.asked === true
 };
+if (settings.myLoc) settings.asked = true;
+delete old.loc;
+const effLoc = () => settings.myLoc || AMS;
 const saveList = () => store('list2', list);
-const saveSettings = () => store('settings', Object.assign({}, oldSettings, settings));
+const saveSettings = () => store('settings', Object.assign({}, old, settings));
 const byId = id => list.find(s => s.id === id);
 const enabled = () => list.filter(s => s.on);
 const recentFail = s => s.fail && Date.now() - s.fail < 3600e3;
-const freqOf = i => { const n = list.length; return Math.round((n > 1 ? 88.5 + (i / (n - 1)) * 19 : 98) * 10) / 10; };
-const pct = f => (2 + ((f - LO) / (HI - LO)) * 96).toFixed(3) + '%';
-function nearest(f) {
-  let best = null, bd = 1e9;
-  list.forEach((s, i) => { const d = Math.abs(freqOf(i) - f); if (d < bd) { bd = d; best = s; } });
-  return best ? { st: best, d: bd } : null;
-}
 saveList();
 
-/* ---------- willekeurige volgorde (schudzak) ---------- */
+/* ---------- welke zenders staan op de schaal ---------- */
+let fmMap = bestFm(effLoc().lat, effLoc().lon);
+const srcSet = () => CATALOG.filter(c => settings.source === 'alles' || c.set === 'fm');
+let dialCache = null;
+function dialState() {
+  const cur = tuningTo || current;
+  const key = settings.mode + '|' + settings.source + '|' + effLoc().lat + ',' + effLoc().lon + '|' + list.map(s => s.id + (s.on ? 1 : 0)).join() + '|' + (cur ? cur.id : '');
+  if (dialCache && dialCache.key === key) return dialCache;
+  let pool;
+  if (settings.mode === 'radio') {
+    const seen = new Set();
+    pool = srcSet().map(c => byId(c.id) || c).concat(list.filter(s => s.custom)).filter(s => !seen.has(s.id) && seen.add(s.id));
+  } else pool = list.slice();
+  /* wat nu speelt staat altijd op de schaal, ook als het (nog) niet in de lijst of de gekozen bron zit */
+  if (cur && !pool.some(s => s.id === cur.id)) pool.push(cur);
+  const fm = pool.filter(s => fmMap[s.id]).sort((a, b) => fmMap[a.id].mhz - fmMap[b.id].mhz);
+  const online = pool.filter(s => !fmMap[s.id]);
+  dialCache = { key, fm, online, seq: fm.concat(online) };
+  return dialCache;
+}
+const isFav = s => settings.mode === 'radio' ? !!byId(s.id) : !!s.on;
+const pctNum = f => 2 + ((f - LO) / (EDGE - LO)) * 96;
+const oPos = i => { const n = dialState().online.length; return 12 + (n > 1 ? clamp(i, 0, n - 1) / (n - 1) : 0.5) * 84; };
+function nearestFm(f) {
+  let best = null, bd = 1e9;
+  for (const s of dialState().fm) { const d = Math.abs(fmMap[s.id].mhz - f); if (d < bd) { bd = d; best = s; } }
+  return best ? { st: best, d: bd } : null;
+}
+function nearestOnline(p) {
+  const o = dialState().online, n = o.length;
+  if (!n) return null;
+  return { st: o[clamp(Math.round(n > 1 ? ((p - 12) / 84) * (n - 1) : 0), 0, n - 1)], d: 0 };
+}
+
+/* ---------- willekeurige volgorde (schudzak over Mijn lijst) ---------- */
 let bag = [];
 function cleanBag() { const en = new Set(enabled().map(s => s.id)); bag = bag.filter(id => en.has(id) && id !== current?.id); }
 function refillBag() { bag = shuffle(enabled().map(s => s.id).filter(id => id !== current?.id)); }
@@ -791,10 +1161,15 @@ function addToBag(id) { if (!bag.includes(id)) bag.splice(Math.floor(Math.random
 
 /* ---------- speler: twee decks voor naadloos overvloeien ---------- */
 const decks = [new Audio(), new Audio()];
-let activeIdx = -1, current = byId(restore('last')) || null, intent = false;
+let activeIdx = -1, current = null, intent = false;
 let tuneToken = 0, tuningTo = null, failStreak = 0;
 let nextAt = 0, pausedRemaining = 0, fadeTimer = null, stallTimer = null;
-let dragF = null;
+let band = 'fm', bandAt = 0, lastFm = null, dragF = null, dragP = null;
+{
+  const lastId = restore('last');
+  current = byId(lastId) || (catById(lastId) ? fromCatalog(catById(lastId)) : null);
+  if (current) { band = fmMap[current.id] ? 'fm' : 'online'; if (band === 'fm') lastFm = current.id; }
+}
 const intervalMs = () => Math.round(settings.minutes * 60) * 1000;
 const activeDeck = () => activeIdx > -1 ? decks[activeIdx] : null;
 const pageIsSecure = location.protocol === 'https:';
@@ -817,7 +1192,7 @@ function onWaiting(el) {
   if (el !== activeDeck() || !intent) return;
   clearStall();
   stallTimer = setTimeout(() => {
-    if (el === activeDeck() && intent && !tuningTo) { toast(current.name + ' hapert, op naar de volgende zender.'); next(); }
+    if (el === activeDeck() && intent && !tuningTo) { toast(current.name + ' hapert, op naar de volgende zender.'); smartNext(); }
   }, 12000);
 }
 function onLost(el) {
@@ -825,7 +1200,7 @@ function onLost(el) {
   clearStall();
   if (current) { current.fail = Date.now(); saveList(); }
   toast('Verbinding met ' + (current ? current.name : 'de zender') + ' verbroken, op naar de volgende.');
-  next();
+  smartNext();
 }
 let hlsPromise = null;
 function loadHls() {
@@ -851,7 +1226,7 @@ async function attachSource(el, st, url) {
   }
   el.src = url;
 }
-/* http-zenders: eerst https proberen; op een https-site is http geblokkeerd, lokaal mag het als terugval. */
+/* http-zenders: eerst https proberen; op een https-site is http geblokkeerd, lokaal mag het als terugval */
 function streamCandidates(st) {
   if (!/^http:\/\//i.test(st.url)) return [st.url];
   const secure = 'https://' + st.url.slice(7);
@@ -893,16 +1268,23 @@ function failText(st) {
     : st.name + ' reageert niet';
 }
 function reschedule() { if (intent && activeIdx !== -1) nextAt = Date.now() + intervalMs(); }
+function setBandFor(st) {
+  const b = fmMap[st.id] ? 'fm' : 'online';
+  if (b !== band) { band = b; bandAt = Date.now(); }
+  if (b === 'fm') lastFm = st.id;
+}
 
 async function tuneTo(st, opts = {}) {
   if (!st) return;
   intent = true;
   const token = ++tuneToken;
   finishFade(); clearStall();
-  tuningTo = st; nextAt = 0;
+  tuningTo = st; nextAt = 0; dragF = null; dragP = null;
+  setBandFor(st);
   const idx = activeIdx === -1 ? 0 : 1 - activeIdx;
   const el = decks[idx];
   render();
+  tuneFx();
   const cands = streamCandidates(st);
   let res = false, usedUrl = st.url;
   for (let i = 0; i < cands.length; i++) {
@@ -927,13 +1309,14 @@ async function tuneTo(st, opts = {}) {
     st.fail = Date.now(); saveList();
     failStreak++;
     const hasOld = activeIdx !== -1;
-    if (opts.manual && hasOld) { toast(failText(st) + '. ' + current.name + ' blijft aan.'); reschedule(); render(); return; }
+    if (current) setBandFor(current);
+    if ((opts.manual || settings.mode === 'radio') && hasOld) { toast(failText(st) + '. ' + current.name + ' blijft aan.'); reschedule(); render(); return; }
     if (failStreak >= Math.min(8, Math.max(1, enabled().length))) {
       toast('Geen enkele zender reageert. Controleer je internetverbinding.');
       if (hasOld) { reschedule(); render(); } else stop();
       return;
     }
-    const nx = takeNext();
+    const nx = settings.mode === 'radio' ? null : takeNext();
     if (nx && nx !== st) { toast(failText(st) + '. Ik probeer ' + nx.name + '.'); tuneTo(nx, { resume: opts.resume }); }
     else if (hasOld) { reschedule(); render(); }
     else { toast(failText(st) + '.'); stop(); }
@@ -946,14 +1329,15 @@ async function tuneTo(st, opts = {}) {
   nextAt = Date.now() + (opts.resume && pausedRemaining > 0 ? pausedRemaining : intervalMs());
   pausedRemaining = 0;
   crossfade(oldIdx === -1 ? null : decks[oldIdx], el);
-  if (list.includes(st)) store('last', st.id);
+  store('last', st.id);
   saveList(); updateMedia(); render();
 }
 function start() {
   if (intent) return;
-  if (!current && !enabled().length) { toast('Zet eerst minstens één zender in de rotatie.'); return; }
+  const first = current || (settings.mode === 'radio' ? dialState().seq[0] : takeNext());
+  if (!first) { toast('Zet eerst minstens één zender in Mijn lijst.'); return; }
   failStreak = 0;
-  tuneTo(current || takeNext(), { resume: true });
+  tuneTo(first, { resume: true });
 }
 function stop() {
   if (nextAt) pausedRemaining = Math.max(0, nextAt - Date.now());
@@ -963,13 +1347,26 @@ function stop() {
   updateMedia(); render();
 }
 function toggle() { (intent ? stop : start)(); }
-function next() {
+function hop() {
   const st = takeNext();
   if (!st) { toast(current ? 'Er staat geen andere zender in de rotatie.' : 'Zet eerst een zender in de rotatie.'); return; }
   failStreak = 0; pausedRemaining = 0;
   tuneTo(st);
 }
-function playStation(st) { if (!st) return; failStreak = 0; pausedRemaining = 0; tuneTo(st, { manual: true }); }
+function step(dir) {
+  const seq = dialState().seq;
+  if (!seq.length) return;
+  const i = current ? seq.findIndex(s => s.id === current.id) : -1;
+  const ni = i < 0 ? (dir > 0 ? 0 : seq.length - 1) : (i + dir + seq.length) % seq.length;
+  playStation(seq[ni]);
+}
+function smartNext() { if (settings.mode === 'radio') step(1); else hop(); }
+function playStation(st) {
+  if (!st) return;
+  const mine = byId(st.id);
+  failStreak = 0; pausedRemaining = 0;
+  tuneTo(mine || (st.custom || st.fam === 'Eigen' ? st : (catById(st.id) ? fromCatalog(catById(st.id)) : st)), { manual: true });
+}
 
 function updateMedia() {
   if (!('mediaSession' in navigator)) return;
@@ -980,229 +1377,460 @@ function updateMedia() {
 }
 if ('mediaSession' in navigator) {
   const set = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch (e) {} };
-  set('play', start); set('pause', stop); set('stop', stop); set('nexttrack', next);
+  set('play', start); set('pause', stop); set('stop', stop);
+  set('nexttrack', smartNext); set('previoustrack', () => step(-1));
 }
 
-/* ---------- afstemmen met schaal en draaiknop ---------- */
+/* ---------- afstemmen: schaal, wiel en draaiknop ---------- */
 const dials = [];
 function makeDial(host) {
   host.innerHTML = '';
   const labels = document.createElement('div');
   const scale = document.createElement('div'); scale.className = 'scale'; scale.setAttribute('aria-hidden', 'true');
-  let h = '';
-  for (let k = 0; k <= 41; k++) {
-    const f = LO + k * 0.5, even = f % 2 === 0, whole = f % 1 === 0;
-    h += '<span class="tick' + (even ? ' major' : whole ? ' mid' : '') + '" style="left:' + pct(f) + '"></span>';
-  }
-  for (let v = 88; v <= 108; v += 2) h += '<span class="num' + (v % 4 ? ' odd' : '') + '" style="left:' + pct(v) + '">' + v + '</span>';
-  h += '<span class="mhz">MHz</span><div class="stems"></div>';
-  scale.innerHTML = h;
   const needle = document.createElement('div'); needle.className = 'needle'; needle.setAttribute('aria-hidden', 'true');
-  needle.innerHTML = '<span class="line"></span><span class="grip tab">98.0</span>';
+  needle.innerHTML = '<span class="line"></span><span class="grip tab">—</span>';
   const range = document.createElement('input');
-  Object.assign(range, { type: 'range', min: 875, max: 1080, step: 1, className: 'freq' });
-  range.setAttribute('aria-label', 'Frequentieschaal: sleep om af te stemmen');
-  host.append(labels, scale, needle, range);
-  range.addEventListener('input', () => beginDrag(Number(range.value) / 10));
+  Object.assign(range, { type: 'range', step: 1, className: 'freq' });
+  range.setAttribute('aria-label', 'Afstemschaal: sleep om af te stemmen, voorbij 108 kom je bij de online zenders');
+  const er = document.createElement('button'); er.type = 'button'; er.className = 'edgebtn r'; er.innerHTML = 'online ' + CHEV_R;
+  const el = document.createElement('button'); el.type = 'button'; el.className = 'edgebtn l'; el.innerHTML = CHEV_L + ' fm';
+  host.append(labels, scale, er, el, needle, range);
+  range.addEventListener('input', () => {
+    const v = Number(range.value);
+    if (band === 'online') beginDrag(null, 2 + (v / 1000) * 96); else beginDrag(v / 10, null);
+  });
   range.addEventListener('change', snap);
   range.addEventListener('pointerup', snap);
   range.addEventListener('keydown', keyStep);
-  labels.addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) playStation(byId(b.dataset.id)); });
-  const d = { host, labels, stems: scale.querySelector('.stems'), needle, grip: needle.querySelector('.grip'), range };
+  host.addEventListener('wheel', onWheel, { passive: true });
+  labels.addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) playStation(stationById(b.dataset.id)); });
+  er.addEventListener('click', goOnline);
+  el.addEventListener('click', goFm);
+  const d = { host, labels, scale, needle, grip: needle.querySelector('.grip'), range, er, el, key: '' };
   dials.push(d);
   return d;
 }
-function buildDialLabels() {
-  for (const d of dials) {
-    d.labels.innerHTML = list.map((s, i) => {
-      const row = i % 2;
-      return '<button type="button" tabindex="-1" class="lbl' + (s.on ? '' : ' off') + '" data-id="' + esc(s.id) + '" style="left:' + pct(freqOf(i)) + ';top:' + (row ? 38 : 0) + 'px" aria-label="Stem af op ' + esc(s.name) + '">' + esc(s.short || shortName(s.name)) + '</button>';
-    }).join('');
-    d.stems.innerHTML = list.map((s, i) => {
-      const row = i % 2;
-      return '<span class="stem" data-id="' + esc(s.id) + '" style="left:' + pct(freqOf(i)) + ';top:' + (row ? -14 : -48) + 'px;height:' + (row ? 30 : 64) + 'px"></span>';
-    }).join('');
-  }
+const stationById = id => byId(id) || dialState().seq.find(s => s.id === id) || (catById(id) ? fromCatalog(catById(id)) : null);
+function shownId() {
+  if (dragF != null || dragP != null) { const t = tuning(); return t.st && t.locked ? t.st.id : null; }
+  return current ? current.id : null;
 }
-function beginDrag(f) {
-  dragF = clamp(f, LO, HI);
+/* labels en streepjes opnieuw opbouwen als de band, de lijst, de locatie of de breedte verandert */
+function buildDial(d) {
+  const ds = dialState();
+  const W = d.host.clientWidth || 1300;
+  const key = band + '|' + ds.key + '|' + (current ? current.id : '') + '|' + Math.round(W / 50);
+  if (d.key === key) return;
+  d.key = key;
+  const anim = bandAt && Date.now() - bandAt < 700 ? (band === 'online' ? ' band-in-r' : ' band-in-l') : '';
+  let ticks = '', stems = '', lbls = '';
+  if (band === 'fm') {
+    for (let k = 0; k <= 41; k++) {
+      const f = LO + k * 0.5, even = f % 2 === 0, whole = f % 1 === 0;
+      ticks += '<span class="tick' + (even ? ' major' : whole ? ' mid' : '') + '" style="left:' + pctNum(f).toFixed(2) + '%"></span>';
+    }
+    for (let v = 88; v <= 108; v += 2) ticks += '<span class="num' + (v % 4 ? ' odd' : '') + '" style="left:' + pctNum(v).toFixed(2) + '%">' + v + '</span>';
+    ticks += '<span class="mhz">MHz</span>';
+  } else {
+    ds.online.forEach((s, i) => { const fav = isFav(s); ticks += '<span class="tick' + (fav ? ' mid' : '') + '" style="left:' + oPos(i).toFixed(2) + '%;opacity:' + (fav ? .9 : .45) + '"></span>'; });
+  }
+  const items = band === 'fm' ? ds.fm : ds.online.filter(s => isFav(s) || (current && s.id === current.id));
+  const rowEnds = [-1e9, -1e9, -1e9, -1e9];
+  for (const s of items) {
+    const pos = band === 'fm' ? pctNum(fmMap[s.id].mhz) : oPos(ds.online.indexOf(s));
+    const big = isFav(s) || (current && s.id === current.id);
+    const label = s.short || shortName(s.name);
+    const w = label.length * (big ? 7.4 : 6.4) + (big ? 16 : 11);
+    const x = pos / 100 * W;
+    let row = rowEnds.findIndex(e => e < x - w / 2 - 4);
+    if (row < 0) row = rowEnds.indexOf(Math.min.apply(null, rowEnds));
+    rowEnds[row] = x + w / 2;
+    const h = big ? 22 : 19, top = row * 20, bottom = top + h;
+    lbls += '<button type="button" tabindex="-1" class="lbl' + (big ? '' : ' minor') + anim + '" data-id="' + esc(s.id) + '" style="left:' + pos.toFixed(2) + '%;top:' + top + 'px" aria-label="Stem af op ' + esc(s.name) + (band === 'fm' ? ', ' + fmMap[s.id].mhz.toFixed(1) + ' megahertz' : ', online') + '">' + esc(label) + '</button>';
+    stems += '<span class="stem' + (big ? '' : ' minor') + '" data-id="' + esc(s.id) + '" style="left:' + pos.toFixed(2) + '%;top:' + (bottom - 80) + 'px;height:' + Math.max(4, 96 - bottom) + 'px"></span>';
+  }
+  d.labels.innerHTML = lbls;
+  d.scale.className = 'scale' + anim;
+  d.scale.innerHTML = ticks + stems;
+  d.range.min = band === 'fm' ? 875 : 0;
+  d.range.max = band === 'fm' ? 1110 : 1000;
+  d.er.hidden = band !== 'fm';
+  d.el.hidden = band !== 'online';
+  d.er.setAttribute('aria-label', 'Naar de ' + ds.online.length + ' online zenders');
+  d.el.setAttribute('aria-label', 'Terug naar de ' + ds.fm.length + ' FM-zenders');
+}
+function beginDrag(f, p) {
+  if (f != null) dragF = clamp(f, LO, EDGE);
+  if (p != null) dragP = clamp(p, 2, 98);
   dials.forEach(d => d.host.classList.add('dragging'));
   renderNow();
 }
 function snap() {
   knobCenter = null;
-  if (dragF == null) return;
-  const nr = nearest(dragF);
-  dragF = null;
-  dials.forEach(d => d.host.classList.remove('dragging'));
   $('#knob').classList.remove('dragging');
-  if (nr) playStation(nr.st); else renderNow();
+  dials.forEach(d => d.host.classList.remove('dragging'));
+  const ds = dialState();
+  if (band === 'online') {
+    if (dragP == null) return;
+    const p = dragP; dragP = null;
+    if (p < 10) { const back = ds.fm.find(s => s.id === lastFm) || ds.fm[0]; if (back) playStation(back); else renderNow(); return; }
+    const nr = nearestOnline(p); if (nr) playStation(nr.st); else renderNow();
+    return;
+  }
+  if (dragF == null) return;
+  const f = dragF; dragF = null;
+  if (f > 108.4) { const o = firstOnline(); if (o) playStation(o); else renderNow(); return; }
+  const nr = nearestFm(Math.min(f, HI)); if (nr) playStation(nr.st); else renderNow();
 }
+/* eerste online favoriet die het de afgelopen tijd deed */
+function firstOnline() { const o = dialState().online; return o.find(s => isFav(s) && !recentFail(s)) || o.find(s => !recentFail(s)) || o[0]; }
+function goOnline() { const t = firstOnline(); if (t) playStation(t); }
+function goFm() { const f = dialState().fm; const t = f.find(s => s.id === lastFm) || f[0]; if (t) playStation(t); }
 function keyStep(e) {
   const k = e.key;
   if (k !== 'ArrowLeft' && k !== 'ArrowRight' && k !== 'ArrowUp' && k !== 'ArrowDown') return;
   e.preventDefault();
-  if (!list.length) return;
-  const dir = (k === 'ArrowLeft' || k === 'ArrowDown') ? -1 : 1;
-  const idx = current ? list.indexOf(current) : -1;
-  playStation(list[clamp((idx < 0 ? 0 : idx) + dir, 0, list.length - 1)]);
+  step((k === 'ArrowLeft' || k === 'ArrowDown') ? -1 : 1);
+}
+let wheelT = null;
+function onWheel(e) {
+  const dx = e.deltaX;
+  if (!dx || Math.abs(dx) < Math.abs(e.deltaY)) return;
+  const t = tuning();
+  if (band === 'online') beginDrag(null, (dragP != null ? dragP : t.pos) + dx * 0.06);
+  else beginDrag(Math.round(((dragF != null ? dragF : (t.online ? HI : t.f)) + dx * 0.015) * 100) / 100, null);
+  clearTimeout(wheelT); wheelT = setTimeout(snap, 450);
 }
 let knobCenter = null;
-function knobF(e) {
+function knobFrac(e) {
   const k = knobCenter || { x: 0, y: 0 };
   const a = clamp(Math.atan2(e.clientX - k.x, -(e.clientY - k.y)) * 180 / Math.PI, -135, 135);
-  return Math.round((88.5 + ((a + 135) / 270) * 19) * 10) / 10;
+  return (a + 135) / 270;
 }
+function knobDrag(frac) { if (band === 'online') beginDrag(null, 2 + frac * 96); else beginDrag(Math.round((LO + frac * (EDGE - LO)) * 10) / 10, null); }
 const knob = $('#knob');
 knob.addEventListener('pointerdown', e => {
   const r = knob.getBoundingClientRect();
   knobCenter = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   try { knob.setPointerCapture(e.pointerId); } catch (err) {}
   knob.classList.add('dragging');
-  beginDrag(knobF(e));
+  knobDrag(knobFrac(e));
 });
-knob.addEventListener('pointermove', e => { if (knobCenter && dragF != null) beginDrag(knobF(e)); });
+knob.addEventListener('pointermove', e => { if (knobCenter && (dragF != null || dragP != null)) knobDrag(knobFrac(e)); });
 knob.addEventListener('pointerup', snap);
 knob.addEventListener('pointercancel', snap);
 knob.addEventListener('keydown', keyStep);
+let ringKey = '';
 function buildRing() {
+  const ds = dialState();
+  const key = band + '|' + ds.key + '|' + (current ? current.id : '');
+  if (key === ringKey) return;
+  ringKey = key;
   const wrap = $('#knobWrap');
   $$('.ringchip', wrap).forEach(n => n.remove());
-  const n = list.length;
-  list.forEach((s, i) => {
-    const a = (-135 + (n > 1 ? i / (n - 1) : 0.5) * 270) * Math.PI / 180;
+  const pool = (band === 'fm' ? ds.fm : ds.online).filter(s => isFav(s) || (current && s.id === current.id));
+  const placed = [];
+  for (const s of pool) {
+    const pos = band === 'fm' ? pctNum(fmMap[s.id].mhz) : oPos(ds.online.indexOf(s));
+    const deg = ((pos - 2) / 96) * 270 - 135;
+    const rad = placed.some(p => p.rad === 46 && Math.abs(p.deg - deg) < 9) ? 40 : 46;
+    placed.push({ deg, rad });
+    const a = deg * Math.PI / 180;
     const b = document.createElement('button');
-    b.type = 'button'; b.tabIndex = -1; b.className = 'ringchip' + (s.on ? '' : ' off'); b.dataset.id = s.id;
-    b.style.left = (50 + 46 * Math.sin(a)).toFixed(2) + '%';
-    b.style.top = (50 - 46 * Math.cos(a)).toFixed(2) + '%';
-    b.textContent = s.mono; b.setAttribute('aria-label', 'Stem af op ' + s.name);
+    b.type = 'button'; b.tabIndex = -1; b.className = 'ringchip'; b.dataset.id = s.id;
+    b.style.left = (50 + rad * Math.sin(a)).toFixed(2) + '%';
+    b.style.top = (50 - rad * Math.cos(a)).toFixed(2) + '%';
+    b.textContent = s.mono || initials(s.name);
+    b.setAttribute('aria-label', 'Stem af op ' + s.name);
     b.addEventListener('click', () => playStation(s));
     wrap.appendChild(b);
-  });
+  }
 }
 
 /* ---------- weergave ---------- */
-function tuningState() {
-  const idx = current ? list.indexOf(current) : -1;
-  const tIdx = tuningTo ? list.indexOf(tuningTo) : -1;
-  const curF = idx >= 0 ? freqOf(idx) : 98;
-  let f = curF, st = tuningTo || current, locked = true;
-  if (dragF != null) {
-    f = dragF;
-    const nr = nearest(dragF);
-    locked = !!nr && nr.d < 0.45;
-    st = locked ? nr.st : null;
-  } else if (tuningTo && tIdx >= 0) f = freqOf(tIdx);
-  return { f, st, locked, dragging: dragF != null, inList: st ? list.includes(st) : false };
+/* waar staat de naald, wat is er te zien */
+function tuning() {
+  const ds = dialState();
+  const st0 = tuningTo || current;
+  const online = st0 ? !fmMap[st0.id] : false;
+  const curF = st0 && fmMap[st0.id] ? fmMap[st0.id].mhz : 98;
+  const dragging = dragF != null || dragP != null;
+  const edgeOnline = band === 'fm' && dragF != null && dragF > 108.4;
+  const edgeFm = band === 'online' && dragP != null && dragP < 10;
+  let st = st0, locked = true, f = dragF != null ? dragF : curF, pos;
+  if (band === 'online') {
+    const oi = st0 ? ds.online.findIndex(s => s.id === st0.id) : -1;
+    pos = dragP != null ? dragP : (online && oi >= 0 ? oPos(oi) : 6);
+    if (dragP != null) { const nr = nearestOnline(dragP); st = edgeFm ? null : (nr ? nr.st : null); locked = !edgeFm && !!nr; }
+  } else {
+    pos = dragF != null ? pctNum(dragF) : (online ? 93 : pctNum(curF));
+    if (dragF != null) { const nr = nearestFm(Math.min(dragF, HI)); locked = !edgeOnline && !!nr && nr.d < 0.45; st = locked ? nr.st : null; }
+  }
+  return { st, locked, dragging, edgeOnline, edgeFm, f, pos, online: !dragging && online };
 }
 function renderNow() {
-  const t = tuningState();
+  const ds = dialState();
+  const t = tuning();
   const live = intent && activeIdx > -1 && !tuningTo && !t.dragging;
   const s = (t.dragging || tuningTo) ? 'tune' : live ? 'live' : 'off';
   const statusText = s === 'tune' ? 'Afstemmen' : s === 'live' ? 'Live' : current ? 'Gepauzeerd' : 'Uit';
-  const st = t.st || (t.dragging ? { name: 'Ruis', mono: '···', color: '#2A3038' } : null);
-  const name = st ? st.name : 'Klaar om te zappen';
-  const meta = t.dragging
-    ? (t.locked ? 'Loslaten om af te stemmen · ' + st.genre : 'Geen zender op ' + t.f.toFixed(1) + ' MHz')
-    : tuningTo ? 'Verbinden met de stream…'
-    : st ? [st.genre, t.inList ? 'FM ' + t.f.toFixed(1) : 'voorbeeld, staat niet op je radio'].filter(Boolean).join(' · ')
-    : 'Druk op afspelen. Elke paar minuten springt de radio naar een willekeurige zender uit je lijst.';
+  const st = t.st || (t.edgeOnline ? { name: 'Online zenders', short: 'ONLINE', mono: 'WEB', color: '#3A4250' } : t.edgeFm ? { name: 'FM-zenders', short: 'FM', mono: 'FM', color: '#3A4250' } : t.dragging ? { name: 'Ruis', short: 'RUIS', mono: '···', color: '#2A3038' } : null);
+  const fm = st && fmMap[st.id];
+  const loc = effLoc().name;
+  /* onder de zendernaam: genre en 'via' de plaats van de zendmast; toren en afstand staan in een tooltip */
+  let metaHTML;
+  if (t.dragging) metaHTML = esc(t.edgeOnline ? 'Laat los voor de ' + ds.online.length + ' online zenders' : t.edgeFm ? 'Laat los om terug te gaan naar FM' : t.locked ? 'Loslaten om af te stemmen · ' + (st.genre || '') : 'Geen zender op ' + t.f.toFixed(1) + ' MHz');
+  else if (tuningTo) metaHTML = 'Verbinden met de stream…';
+  else if (st) {
+    const via = fm ? 'via ' + mastName(fm.site) : 'via internet';
+    const tip = fm
+      ? mastTower(fm.site) + ' · ' + fm.km + ' km van ' + loc + (fm.alt ? '. Ook te horen op ' + fm.alt.mhz.toFixed(1) + ' via ' + mastName(fm.alt.site) : '')
+      : 'Geen FM-zender in de buurt van ' + loc + '. Deze zender speelt hier via internet.';
+    metaHTML = (st.genre ? esc(st.genre) + ' · ' : '') + '<span class="tip mast" tabindex="0" role="button" aria-label="' + esc(via + '. ' + tip) + '">' + esc(via) + '<span class="tipbox" role="tooltip">' + esc(tip) + '</span></span>';
+  } else metaHTML = 'Druk op afspelen. Kies Radio om zelf een zender te kiezen, of Shuffle om om de paar minuten te wisselen.';
   const lit = live || (t.dragging && t.locked);
-  const shownId = st && st.id;
+  const readout = !t.dragging && !tuningTo && !current ? '—' : band === 'online' || t.online ? 'WEB' : (t.edgeOnline ? '108+' : Math.min(t.f, HI).toFixed(1));
+  const grip = band === 'online' ? (t.edgeFm ? '‹ FM' : (st ? st.short || shortName(st.name) : 'WEB')) : (t.edgeOnline ? 'ONLINE ›' : t.online ? 'WEB' : Math.min(t.f, HI).toFixed(1));
+  const sid = st && st.id;
 
-  $$('[data-role="status"]').forEach(el => el.dataset.s = s);
-  $$('[data-role="statusText"]').forEach(el => el.textContent = statusText);
-  $$('[data-role="rotCount"]').forEach(el => el.textContent = enabled().length + ' zenders in rotatie');
+  qa('[data-role="status"]').forEach(el => el.dataset.s = s);
+  qa('[data-role="statusText"]').forEach(el => el.textContent = statusText);
   qa('[data-role="logo"]').forEach(el => { const html = logoHTML(st, el.dataset.size); if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; } });
-  qa('[data-role="name"]').forEach(el => { el.textContent = name; el.classList.toggle('lit', lit); });
-  $$('[data-role="meta"]').forEach(el => el.textContent = meta);
-  $$('[data-role="readout"]').forEach(el => el.textContent = t.f.toFixed(1));
-  $$('[data-role="capMono"]').forEach(el => el.textContent = st ? st.mono : '—');
+  qa('[data-role="name"]').forEach(el => { el.textContent = st ? st.name : 'Klaar om te zappen'; el.classList.toggle('lit', lit); });
+  $$('[data-role="meta"]').forEach(el => { if (el.dataset.k !== metaHTML) { el.innerHTML = metaHTML; el.dataset.k = metaHTML; } });
+  $$('[data-role="readout"]').forEach(el => el.textContent = readout);
+  /* vraagteken achter MHz: alleen zolang je geen eigen plaats hebt gekozen */
+  const showQ = !settings.myLoc && /^\d/.test(readout) && readout !== '108+';
+  $$('[data-role="freqTip"]').forEach(el => el.hidden = !showQ);
+  $$('.lcd').forEach(el => el.classList.toggle('dim', !intent && !t.dragging));
+  $$('.ring .play, .fs-transport .play').forEach(b => b.classList.toggle('breath', live));
+  $$('[data-role="capMono"]').forEach(el => el.textContent = st ? st.mono || '—' : '—');
   const nx = peekNext();
   $$('[data-role="next"]').forEach(el => el.textContent = nx ? nx.name : '—');
+  $$('[data-role="nextLogo"]').forEach(el => { const html = logoHTML(nx); if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; } });
   qa('button[data-act="toggle"]').forEach(b => { b.innerHTML = intent ? ICON_PAUSE : ICON_PLAY; b.setAttribute('aria-label', intent ? 'Pauzeren' : 'Afspelen'); b.setAttribute('aria-pressed', String(intent)); });
   $$('[data-role="npStatus"]').forEach(el => { el.textContent = statusText; el.classList.toggle('live', s === 'live'); });
   $$('[data-role="npName"]').forEach(el => el.textContent = current ? current.name : 'Nog niets gekozen');
   mini.querySelectorAll('[data-role="miniStatus"]').forEach(el => { el.textContent = statusText; el.classList.toggle('live', s === 'live'); });
+  $$('.lcd').forEach(el => el.style.setProperty('--amb', rgba(st ? st.color : '#2A3038', 0.62)));
+
+  /* zijkant licht op als je tegen de rand schuift; voorbij het klikpunt wordt de gloed vol */
+  const er = band === 'fm' && dragF != null ? (dragF > 108.4 ? 0.75 + 0.25 * clamp01((dragF - 108.4) / 2) : 0.35 * clamp01((dragF - 106.6) / 1.8)) : 0;
+  const el = band === 'online' && dragP != null ? (dragP < 10 ? 0.75 + 0.25 * clamp01((10 - dragP) / 7) : 0.35 * clamp01((16 - dragP) / 6)) : 0;
+  $$('.edge.r').forEach(x => x.style.opacity = er.toFixed(2));
+  $$('.edge.l').forEach(x => x.style.opacity = el.toFixed(2));
 
   for (const d of dials) {
-    d.needle.style.left = pct(t.f);
-    d.grip.textContent = t.f.toFixed(1);
-    if (document.activeElement !== d.range || !t.dragging) d.range.value = Math.round(t.f * 10);
-    d.range.setAttribute('aria-valuetext', (st && (t.locked || !t.dragging) ? st.name + ', ' : 'geen zender, ') + t.f.toFixed(1) + ' megahertz');
-    d.labels.querySelectorAll('.lbl').forEach(b => b.classList.toggle('air', b.dataset.id === shownId && t.inList !== false));
-    d.stems.querySelectorAll('.stem').forEach(b => b.classList.toggle('air', b.dataset.id === shownId));
+    buildDial(d);
+    d.needle.style.left = t.pos.toFixed(2) + '%';
+    d.grip.textContent = grip;
+    if (document.activeElement !== d.range || !t.dragging) d.range.value = band === 'online' ? Math.round(((t.pos - 2) / 96) * 1000) : Math.round((dragF != null ? dragF : (t.online ? 109.5 : t.f)) * 10);
+    d.range.setAttribute('aria-valuetext', band === 'online' ? (st ? st.name : 'geen zender') + ', online' : (st && t.locked ? st.name + ', ' : 'geen zender, ') + Math.min(t.f, HI).toFixed(1) + ' megahertz');
+    d.labels.querySelectorAll('.lbl').forEach(b => b.classList.toggle('air', b.dataset.id === sid));
+    d.scale.querySelectorAll('.stem').forEach(b => b.classList.toggle('air', b.dataset.id === sid));
+    d.er.classList.toggle('near', er > 0 && er < 0.7); d.er.classList.toggle('hot', er >= 0.7);
+    d.el.classList.toggle('near', el > 0 && el < 0.7); d.el.classList.toggle('hot', el >= 0.7);
   }
-  const angle = clamp(((t.f - 88.5) / 19) * 270 - 135, -135, 135);
-  knob.style.transform = 'rotate(' + angle.toFixed(1) + 'deg)';
-  knob.setAttribute('aria-valuetext', (st ? st.name + ', ' : '') + t.f.toFixed(1) + ' megahertz');
-  $$('.ringchip').forEach(b => b.classList.toggle('air', b.dataset.id === shownId));
-  $('#fsScreen').style.setProperty('--amb', rgba(st ? st.color : '#2A3038', 0.62));
+  buildRing();
+  knob.style.transform = 'rotate(' + (((t.pos - 2) / 96) * 270 - 135).toFixed(1) + 'deg)';
+  knob.setAttribute('aria-valuetext', (st ? st.name + ', ' : '') + readout);
+  $$('.ringchip').forEach(b => b.classList.toggle('air', b.dataset.id === sid));
   $$('.preset').forEach(b => { const on = b.dataset.id === current?.id; b.setAttribute('aria-pressed', String(on)); b.querySelector('.led').classList.toggle('on', on && intent); });
-  renderStrip(t.f, shownId);
+  renderStrip(t.pos, sid);
   document.title = live && current ? current.name + ' · Zenderhopper' : 'Zenderhopper';
   renderClock();
 }
 function renderClock() {
   let txt, frac = 0;
-  if (tuningTo) txt = 'afstemmen…';
+  if (settings.mode === 'radio') txt = 'blijft op deze zender';
+  else if (tuningTo) txt = 'afstemmen…';
   else if (intent && nextAt) { const ms = Math.max(0, nextAt - Date.now()); txt = 'wissel over ' + fmt(ms); frac = clamp01(1 - ms / intervalMs()); }
   else if (!intent && pausedRemaining && current) txt = 'gepauzeerd · nog ' + fmt(pausedRemaining);
   else txt = 'wisselt elke ' + fmtMin(settings.minutes) + ' min';
   qa('[data-role="clock"]').forEach(el => { if (el.textContent !== txt) el.textContent = txt; });
-  const w = (frac * 100).toFixed(2) + '%';
-  $$('[data-role="progress"], [data-role="bar"]').forEach(el => el.style.width = w);
+  $$('[data-role="bar"]').forEach(el => el.style.width = (frac * 100).toFixed(2) + '%');
+  const ring = settings.mode === 'shuffle' && intent ? 'conic-gradient(var(--amber) ' + (frac * 360).toFixed(1) + 'deg, rgba(255,255,255,.12) 0deg)' : 'rgba(255,255,255,.12)';
+  $$('[data-role="ring"]').forEach(el => el.style.background = ring);
   if (view === 'fs') {
     let tn = '';
     try { tn = new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }); } catch (e) {}
     const el = $('#fsTime'); if (el.textContent !== tn) el.textContent = tn;
   }
 }
+function renderStatic() {
+  const ds = dialState();
+  const radio = settings.mode === 'radio';
+  document.body.classList.toggle('mode-radio', radio);
+  document.body.classList.toggle('mode-shuffle', !radio);
+  $$('[data-mode]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === settings.mode)));
+  $$('[data-src]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.src === settings.source)));
+  $$('[data-role="cntFm"]').forEach(el => el.textContent = CATALOG.filter(c => c.set === 'fm').length);
+  $$('[data-role="cntAll"]').forEach(el => el.textContent = CATALOG.length);
+  $$('[data-role="tagline"]').forEach(el => el.textContent = radio ? 'Gewoon radio: kies een zender en hij blijft spelen.' : 'Je eigen zenders, om de paar minuten willekeurig gewisseld.');
+  $$('[data-role="modeInfo"]').forEach(el => el.textContent = radio ? 'Je kiest zelf de zender' : enabled().length + ' zenders in rotatie');
+  $$('[data-role="locName"]').forEach(el => el.textContent = effLoc().name);
+  $$('[data-role="footHint"]').forEach(el => el.textContent = band === 'online' ? 'Online zenders · schuif helemaal naar links om terug te gaan naar FM' : 'Echte FM-frequenties · schuif voorbij 108 voor de online zenders');
+  $$('[data-role="dialCount"]').forEach(el => el.textContent = ds.fm.length + ' FM-zenders in ' + effLoc().name + (ds.online.length ? ' · ' + ds.online.length + ' zonder FM, via internet' : ''));
+  const presets = (radio ? list : enabled()).slice(0, 6);
+  const phtml = presets.map(s => '<button type="button" class="preset" data-id="' + esc(s.id) + '" aria-pressed="false"><span class="pn">' + (fmMap[s.id] ? fmMap[s.id].mhz.toFixed(1) : 'WEB') + '</span>' + logoHTML(s) + '<span class="pname">' + esc(s.name) + '</span><span class="led" aria-hidden="true"></span></button>').join('');
+  $$('[data-role="presets"]').forEach(el => { if (el.dataset.k !== phtml) { el.innerHTML = phtml; el.dataset.k = phtml; } });
+}
 function renderList() {
+  const radio = settings.mode === 'radio';
   const open = isNarrow() ? settings.compactListOpen : settings.listOpen;
-  const tog = $('#listToggle');
-  tog.setAttribute('aria-expanded', String(open));
+  $('#listToggle').setAttribute('aria-expanded', String(open));
   $('#list').hidden = !open;
-  $('#listSub').textContent = isNarrow()
-    ? list.length + ' zenders'
+  $('#listSub').textContent = isNarrow() || radio
+    ? list.length + ' zenders' + (open && !isNarrow() ? ' · klik een zender voor zijn eigen pagina' : '')
     : enabled().length + ' van ' + list.length + ' in rotatie' + (open ? ' · klik een zender voor zijn eigen pagina' : ' · ingeklapt');
-  if (!list.length) { $('#list').innerHTML = '<div class="empty">Je radio is leeg. Kies zenders via "Zenders toevoegen".</div>'; return; }
-  $('#list').innerHTML = list.map((s, i) => {
-    const isNow = s === current && (intent || tuningTo);
-    const bits = ['FM ' + freqOf(i).toFixed(1), s.genre].filter(Boolean);
-    if (isNow) bits.unshift(tuningTo === s ? 'afstemmen' : 'speelt nu');
-    const fail = recentFail(s) && s !== current ? ' · <span class="bad">storing</span>' : '';
-    return '<div class="row' + (isNow ? ' now' : '') + (s.on ? '' : ' off') + '" data-id="' + esc(s.id) + '">' +
-      logoHTML(s) +
-      '<button type="button" class="row-main" data-act="open"><span class="row-name">' + esc(s.name) + '</span><span class="row-sub">' + esc(bits.join(' · ')) + fail + '</span></button>' +
-      '<button type="button" class="switch" data-act="rot" aria-pressed="' + s.on + '" aria-label="' + esc(s.name) + ' in rotatie"></button></div>';
+  if (!list.length) { $('#list').innerHTML = '<div class="empty">Mijn lijst is leeg. Kies zenders via "Zenders toevoegen".</div>'; return; }
+  $('#list').innerHTML = list.map(s => {
+    const isNow = current && s.id === current.id && (intent || tuningTo);
+    const bits = [fmMap[s.id] ? fmMap[s.id].mhz.toFixed(1) + ' MHz' : 'geen FM hier · via internet', s.genre].filter(Boolean);
+    if (isNow) bits.unshift(tuningTo && tuningTo.id === s.id ? 'afstemmen' : 'speelt nu');
+    const fail = recentFail(s) && !(current && s.id === current.id) ? ' · <span class="bad">storing</span>' : '';
+    const ctrl = radio
+      ? '<button type="button" class="rowplay" data-act="play" aria-label="Speel ' + esc(s.name) + '">' + ICON_PLAY + '</button>'
+      : '<button type="button" class="switch" data-act="rot" aria-pressed="' + s.on + '" aria-label="' + esc(s.name) + ' in rotatie"></button>';
+    return '<div class="row' + (isNow ? ' now' : '') + (s.on ? '' : ' off') + '" data-id="' + esc(s.id) + '">' + logoHTML(s) +
+      '<button type="button" class="row-main" data-act="open"><span class="row-name">' + esc(s.name) + '</span><span class="row-sub">' + esc(bits.join(' · ')) + fail + '</span></button>' + ctrl + '</div>';
   }).join('');
 }
-function renderPresets() {
-  $('#presets').innerHTML = enabled().slice(0, 6).map((s, i) =>
-    '<button type="button" class="preset" data-id="' + esc(s.id) + '" aria-pressed="false">' +
-    '<span class="pn">' + String(i + 1).padStart(2, '0') + '</span>' + logoHTML(s) +
-    '<span class="pname">' + esc(s.name) + '</span><span class="led" aria-hidden="true"></span></button>').join('');
-}
-function renderStrip(f, shownId) {
+function renderStrip(pos, sid) {
   const strip = mini.querySelector('[data-role="strip"]');
-  if (strip.dataset.n !== String(list.length) + list.map(s => s.id + (s.on ? 1 : 0)).join()) {
-    strip.dataset.n = String(list.length) + list.map(s => s.id + (s.on ? 1 : 0)).join();
-    strip.innerHTML = '<span class="ln"></span>' + list.map((s, i) => '<span class="d' + (s.on ? '' : ' off') + '" data-id="' + esc(s.id) + '" style="left:' + pct(freqOf(i)) + '"></span>').join('') + '<span class="nd"></span>';
+  const ds = dialState();
+  const items = band === 'fm' ? ds.fm : ds.online;
+  const key = band + ds.key;
+  if (strip.dataset.k !== key) {
+    strip.dataset.k = key;
+    strip.innerHTML = '<span class="ln"></span>' + items.map((s, i) => '<span class="d' + (isFav(s) ? '' : ' minor') + '" data-id="' + esc(s.id) + '" style="left:' + (band === 'fm' ? pctNum(fmMap[s.id].mhz) : oPos(i)).toFixed(2) + '%"></span>').join('') + '<span class="nd"></span>';
   }
-  strip.querySelectorAll('.d').forEach(d => d.classList.toggle('air', d.dataset.id === shownId));
-  strip.querySelector('.nd').style.left = pct(f);
+  strip.querySelectorAll('.d').forEach(d => d.classList.toggle('air', d.dataset.id === sid));
+  strip.querySelector('.nd').style.left = pos.toFixed(2) + '%';
 }
-let lastListKey = '';
 function render() {
-  const key = list.map(s => s.id + (s.on ? 1 : 0)).join();
-  if (key !== lastListKey) { lastListKey = key; buildDialLabels(); buildRing(); renderPresets(); }
+  renderStatic();
   renderNow();
   renderList();
   if (screen === 'kiezen') renderKiezen();
   if (!$('#modal').hidden) renderModal();
   $$('[data-role="minutes"]').forEach(inp => { if (document.activeElement !== inp) inp.value = settings.minutes; inp.removeAttribute('aria-invalid'); });
+  renderLocUi();
+  const helpHidden = screen !== 'radio' || view === 'fs';
+  $('#helpBtn').hidden = helpHidden;
+  if (helpHidden && !$('#helpPanel').hidden) setHelp(false);
 }
+/* nieuwe zender: frequentie en naam komen even wazig binnen en worden scherp, het logo veert op zijn plek */
+function tuneFx() {
+  qa('[data-role="readout"], [data-role="name"]').concat(qa('[data-role="logo"] .logo')).forEach(el => {
+    const cls = el.classList.contains('logo') ? 'swap-in' : 'tune-in';
+    el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+  });
+}
+
+/* ---------- over Zenderhopper: het vraagteken rechtsonder ---------- */
+function setHelp(open) {
+  $('#helpPanel').hidden = !open; $('#helpScrim').hidden = !open;
+  $('#helpBtn').setAttribute('aria-expanded', String(open));
+  if (open) $('#helpClose').focus();
+}
+$('#helpBtn').addEventListener('click', () => setHelp($('#helpPanel').hidden));
+$('#helpClose').addEventListener('click', () => { setHelp(false); $('#helpBtn').focus(); });
+$('#helpScrim').addEventListener('click', () => setHelp(false));
+$$('[data-role="helpCount"]').forEach(el => el.textContent = CATALOG.length);
+$$('[data-role="helpMasts"]').forEach(el => el.textContent = D.sites.length);
+
+/* ---------- modus, bron en locatie ---------- */
+function setMode(m) {
+  if (m === settings.mode) return;
+  settings.mode = m; saveSettings();
+  if (m === 'shuffle' && intent) nextAt = Date.now() + intervalMs();
+  if (current) setBandFor(current);
+  render();
+  placeSeg(true);
+}
+/* zet het glijdende blokje onder de gekozen modus; met animate glijdt het en tikt de tekst daarna aan */
+function placeSeg(animate) {
+  $$('.seg').forEach(seg => {
+    const b = seg.querySelector('button[aria-checked="true"]'), th = seg.querySelector('.seg-thumb');
+    if (!b || !th || !b.offsetWidth) return;
+    if (!animate) seg.classList.add('instant');
+    th.style.left = b.offsetLeft + 'px';
+    th.style.width = b.offsetWidth + 'px';
+    if (!animate) { void th.offsetWidth; seg.classList.remove('instant'); return; }
+    seg.querySelectorAll('button').forEach(x => x.classList.remove('tick'));
+    void b.offsetWidth; b.classList.add('tick');
+  });
+}
+function setSource(src) {
+  if (src === settings.source) return;
+  settings.source = src; saveSettings();
+  if (src === 'fm' && fam === 'Regionaal') fam = 'Alle zenders';
+  render();
+}
+/* ---------- locatie: eerste vraag, 'Liever niet', GPS en het locatievenster ---------- */
+let geoBusy = false, declinedShown = false, declTimer = null;
+function showLocErr(msg) { [$('#locErr')].concat($$('[data-role="geoErr"]')).forEach(el => { el.textContent = msg; el.hidden = false; }); }
+function hideLocErr() { [$('#locErr')].concat($$('[data-role="geoErr"]')).forEach(el => { el.hidden = true; }); }
+function renderLocUi() {
+  const popOpen = !$('#locPop').hidden;
+  $('#welcomeTip').hidden = settings.asked || popOpen || screen !== 'radio';
+  $('#declinedTip').hidden = !declinedShown || popOpen;
+  $$('[data-role="geoLabel"]').forEach(el => el.textContent = geoBusy ? 'Locatie ophalen…' : 'Gebruik mijn locatie');
+  $('#locIntro').textContent = settings.myLoc
+    ? 'De schaal toont de echte FM-frequenties die je in ' + settings.myLoc.name + ' ontvangt. Ergens anders? Kies hieronder een andere plaats.'
+    : 'Nu staat Amsterdam als standaard ingesteld. Kies je eigen plaats, dan toont de schaal de echte FM-frequenties die je daar ontvangt.';
+}
+function openLocPop() {
+  $('#locPop').hidden = false; $('#locBtn').setAttribute('aria-expanded', 'true');
+  declinedShown = false; hideLocErr(); renderLocUi();
+  setTimeout(() => $('#locInput').focus(), 30);
+}
+function closeLocPop() { $('#locPop').hidden = true; $('#locBtn').setAttribute('aria-expanded', 'false'); renderLocUi(); }
+function applyLocation(p) {
+  settings.myLoc = { name: p.name, lat: Math.round(p.lat * 1000) / 1000, lon: Math.round(p.lon * 1000) / 1000 };
+  settings.asked = true; saveSettings();
+  fmMap = bestFm(settings.myLoc.lat, settings.myLoc.lon);
+  dialCache = null; declinedShown = false;
+  if (current) setBandFor(current);
+  closeLocPop(); $('#locInput').value = '';
+  render();
+  toast('Frequenties voor ' + p.name);
+}
+async function setLocation(q) {
+  hideLocErr();
+  const p = await geocode(q);
+  if (!p) { showLocErr('Niet gevonden. Typ een woonplaats, of een postcode zoals 8011 of 8011 AB.'); return; }
+  applyLocation(p);
+}
+/* GPS: de plaatsnaam zoeken we op dit apparaat op; je coördinaten gaan nergens heen */
+function useGeo() {
+  if (!navigator.geolocation) { showLocErr('Je browser kan je locatie niet doorgeven. Typ je plaats of postcode.'); return; }
+  geoBusy = true; hideLocErr(); renderLocUi();
+  navigator.geolocation.getCurrentPosition(pos => {
+    geoBusy = false;
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    applyLocation({ name: nearestPlace(lat, lon) || 'Jouw locatie', lat, lon });
+  }, () => {
+    geoBusy = false; renderLocUi();
+    showLocErr('Je locatie kon niet worden opgehaald. Typ je plaats of postcode.');
+  }, { timeout: 10000, maximumAge: 600000 });
+}
+/* 'Liever niet': Amsterdam blijft de standaard, met een kort bericht dat vanzelf verdwijnt */
+function declineLoc() {
+  settings.asked = true; saveSettings();
+  declinedShown = true; hideLocErr();
+  clearTimeout(declTimer);
+  declTimer = setTimeout(() => { declinedShown = false; renderLocUi(); }, 12000);
+  renderLocUi();
+}
+$('#declineLoc').addEventListener('click', declineLoc);
+$('#typePlace').addEventListener('click', openLocPop);
+$('#declinedClose').addEventListener('click', () => { declinedShown = false; renderLocUi(); });
+$('#locBtn').addEventListener('click', () => { if ($('#locPop').hidden) openLocPop(); else closeLocPop(); });
+$('#locForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#locInput').value; if (v.trim()) setLocation(v); });
+$('#locQuick').innerHTML = QUICK.map(n => '<button type="button" data-q="' + esc(n) + '">' + esc(n) + '</button>').join('');
+$('#locQuick').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (b) setLocation(b.dataset.q); });
 
 /* ---------- schermen ---------- */
 let screen = 'radio', view = 'normaal';
@@ -1221,7 +1849,9 @@ function enterFs() {
   document.body.classList.add('fs-on');
   $('#screenFs').hidden = false;
   closeModal();
+  dials.forEach(d => d.key = '');
   render();
+  requestAnimationFrame(() => { dials.forEach(d => d.key = ''); renderNow(); placeSeg(false); });
   toast('Volledig scherm · druk op Esc om terug te gaan');
   const el = document.documentElement;
   if (el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().catch(() => {});
@@ -1232,9 +1862,12 @@ function exitFs() {
   document.body.classList.remove('fs-on');
   $('#screenFs').hidden = true;
   if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  dials.forEach(d => d.key = '');
   render();
 }
 document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && view === 'fs') exitFs(); });
+let resizeT = null;
+window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { dials.forEach(d => d.key = ''); renderNow(); placeSeg(false); }, 150); });
 
 /* ---------- mini-speler (zwevend venster) ---------- */
 const mini = $('#mini');
@@ -1264,12 +1897,14 @@ async function openMini() {
     } catch (e) { /* valt terug op de mini-speler in de pagina */ }
   }
   mini.classList.add('floating'); mini.hidden = false;
+  document.body.classList.add('mini-floating');
   toast('Je browser ondersteunt geen zwevend venster. De mini-speler staat rechtsonder.');
   render();
 }
 function closeMini() {
   if (pipWin) { pipWin.close(); return; }
   mini.hidden = true; mini.classList.remove('floating');
+  document.body.classList.remove('mini-floating');
 }
 $('#miniClose').addEventListener('click', closeMini);
 
@@ -1277,14 +1912,13 @@ $('#miniClose').addEventListener('click', closeMini);
 let selected = null;
 function openModal(st) {
   selected = st;
-  const idx = list.indexOf(st);
-  const wave = $('#mWave');
+  const idx = Math.max(0, CATALOG.findIndex(c => c.id === st.id));
   let h = '';
   for (let i = 0; i < 44; i++) {
     const v = 18 + 78 * Math.abs(Math.sin((i + idx * 1.7) / 3.1)) * (0.55 + 0.45 * Math.abs(Math.cos(i * 0.7 + idx)));
     h += '<span style="height:' + Math.round(v) + '%;animation-duration:' + (0.6 + ((i * 5 + idx * 3) % 7) / 10).toFixed(2) + 's;animation-delay:' + (-(i * 0.09)).toFixed(2) + 's"></span>';
   }
-  wave.innerHTML = h;
+  $('#mWave').innerHTML = h;
   $('#modal').hidden = false;
   renderModal();
   $('#mClose').focus();
@@ -1292,20 +1926,28 @@ function openModal(st) {
 function closeModal() { $('#modal').hidden = true; selected = null; }
 function renderModal() {
   const st = selected; if (!st) return;
-  const idx = list.indexOf(st), n = list.length;
-  const f = idx >= 0 ? freqOf(idx).toFixed(1) : '—';
-  const playingThis = st === current && intent && !tuningTo;
-  $('#mHead').style.setProperty('--hb', 'radial-gradient(120% 90% at ' + (12 + (Math.max(0, idx) * 37) % 76) + '% 0%, rgba(255,255,255,.24), transparent 55%), linear-gradient(140deg, ' + st.color + ' 0%, ' + st.color + ' 50%, #0F1216 135%)');
-  $('#mBadge').textContent = playingThis ? 'Nu op de radio · FM ' + f : idx >= 0 ? 'FM ' + f + ' · zender ' + (idx + 1) + ' van ' + n : 'Staat niet op je radio';
+  const ds = dialState();
+  const fm = fmMap[st.id];
+  const playingThis = current && st.id === current.id && intent && !tuningTo;
+  const inList = !!byId(st.id);
+  const idx = Math.max(0, CATALOG.findIndex(c => c.id === st.id));
+  $('#mHead').style.setProperty('--hb', 'radial-gradient(120% 90% at ' + (12 + (idx * 37) % 76) + '% 0%, rgba(255,255,255,.24), transparent 55%), linear-gradient(140deg, ' + st.color + ' 0%, ' + st.color + ' 50%, #0F1216 135%)');
+  $('#mBadge').textContent = playingThis ? 'Nu op de radio · ' + (fm ? 'FM ' + fm.mhz.toFixed(1) : 'online') : (fm ? 'FM ' + fm.mhz.toFixed(1) + ' in ' + effLoc().name : 'Geen FM in ' + effLoc().name + ' · via internet');
   const logo = $('#mLogo'); logo.dataset.ini = st.mono; logo.innerHTML = isWeb(st.favicon) ? '<img class="logo-img" src="' + esc(st.favicon) + '" alt="" referrerpolicy="no-referrer">' : esc(st.mono);
   $('#mName').textContent = st.name;
   $('#mGenre').textContent = st.genre || '';
   $('#mWave').classList.toggle('on', playingThis);
-  $('#mSpot').innerHTML = '<span class="ln"></span>' + list.map((s, i) => '<span class="d' + (s === st ? ' me' : '') + '" style="left:' + pct(freqOf(i)) + ';--c:' + esc(st.color) + '"></span>').join('');
-  $('#mFreq').textContent = f;
-  $('#mStatus').textContent = tuningTo === st ? 'Afstemmen' : playingThis ? 'Speelt nu' : (peekNext() === st && intent) ? 'Komt hierna' : recentFail(st) ? 'Storing' : 'Stil';
-  $('#mRot').textContent = st.on ? 'Aan' : 'Uit';
-  $('#mRotBtn').textContent = st.on ? 'Uit rotatie halen' : 'In rotatie zetten';
+  const dots = ds.fm.filter(s => s.id !== st.id).map(s => '<span class="d" style="left:' + pctNum(fmMap[s.id].mhz).toFixed(2) + '%"></span>').join('');
+  $('#mSpot').innerHTML = '<span class="ln"></span>' + dots + (fm ? '<span class="d me" style="left:' + pctNum(fm.mhz).toFixed(2) + '%;--c:' + esc(st.color) + '"></span>' : '');
+  $('#mMast').textContent = fm ? 'Via ' + fm.site + ', ' + fm.km + ' km verderop' +(fm.alt ? ' · ook te horen op ' + fm.alt.mhz.toFixed(1) + ' via ' + fm.alt.site : '') : 'In ' + effLoc().name + ' is deze zender niet via FM te ontvangen. Je luistert via internet.';
+  $('#mFreq').textContent = fm ? fm.mhz.toFixed(1) : 'online';
+  $('#mStatus').textContent = tuningTo && tuningTo.id === st.id ? 'Afstemmen' : playingThis ? 'Speelt nu' : (peekNext() && peekNext().id === st.id && intent && settings.mode === 'shuffle') ? 'Komt hierna' : recentFail(st) ? 'Storing' : 'Stil';
+  const mine = byId(st.id);
+  $('#mRot').textContent = mine ? (mine.on ? 'Aan' : 'Uit') : 'Niet in je lijst';
+  $('#mRotBtn').hidden = !mine;
+  $('#mRotBtn').textContent = mine && mine.on ? 'Uit rotatie halen' : 'In rotatie zetten';
+  $('#mListBtn').textContent = inList ? 'Uit Mijn lijst halen' : 'In Mijn lijst zetten';
+  $('#mListBtn').classList.toggle('danger', inList);
   $('#mPlayLbl').textContent = playingThis ? 'Speelt nu' : 'Nu afspelen';
   $('#modal .sheet').style.setProperty('--c', st.color);
 }
@@ -1313,14 +1955,18 @@ $('#mClose').addEventListener('click', closeModal);
 $('#modal').addEventListener('click', e => { if (e.target === $('#modal')) closeModal(); });
 $('#mPlay').addEventListener('click', () => { if (selected) playStation(selected); });
 $('#mRotBtn').addEventListener('click', () => { if (selected) toggleRotation(selected.id); });
-$('#mRemove').addEventListener('click', () => { if (selected) { const st = selected; closeModal(); removeFromList(st.id); } });
+$('#mListBtn').addEventListener('click', () => {
+  if (!selected) return;
+  if (byId(selected.id)) removeFromList(selected.id); else addToList(selected);
+  renderModal();
+});
 
 /* ---------- lijst-acties ---------- */
 function toggleRotation(id) {
   const st = byId(id); if (!st) return;
   st.on = !st.on;
   if (st.on) addToBag(st.id);
-  saveList(); render();
+  saveList(); dialCache = null; render();
 }
 function addToList(item) {
   if (list.some(s => s.id === item.id || normUrl(s.url) === normUrl(item.url))) return;
@@ -1329,15 +1975,15 @@ function addToList(item) {
   if (current && current.id === st.id) { Object.assign(current, st); list.push(current); }
   else list.push(st);
   addToBag(st.id);
-  saveList(); render();
-  toast(st.name + ' staat nu op je radio.');
+  saveList(); dialCache = null; render();
+  toast(st.name + ' staat nu in Mijn lijst.');
 }
 function removeFromList(id) {
   const st = byId(id); if (!st) return;
   list = list.filter(s => s !== st);
   bag = bag.filter(x => x !== id);
-  saveList(); render();
-  toast(st.name + ' is van je radio gehaald.');
+  saveList(); dialCache = null; render();
+  toast(st.name + ' is uit Mijn lijst gehaald.');
 }
 $('#list').addEventListener('click', e => {
   const row = e.target.closest('.row[data-id]'); if (!row) return;
@@ -1345,38 +1991,39 @@ $('#list').addEventListener('click', e => {
   const act = e.target.closest('[data-act]')?.dataset.act;
   if (act === 'open') openModal(st);
   if (act === 'rot') toggleRotation(st.id);
+  if (act === 'play') playStation(st);
 });
 $('#listToggle').addEventListener('click', () => {
   if (isNarrow()) settings.compactListOpen = !settings.compactListOpen; else settings.listOpen = !settings.listOpen;
   saveSettings(); renderList();
 });
-$('#presets').addEventListener('click', e => { const b = e.target.closest('.preset'); if (b) playStation(byId(b.dataset.id)); });
+document.addEventListener('click', e => { const b = e.target.closest('.preset'); if (b) playStation(stationById(b.dataset.id)); });
 
 /* ---------- Zenders kiezen ---------- */
 let fam = 'Alle zenders', query = '', dbResults = [], dbState = 'idle', dbTimer = null, dbToken = 0;
 function tileHTML(item, inList, src) {
   const isPlaying = current && current.id === item.id && intent;
-  const famText = isPlaying ? '● speelt nu' : (item.famLabel || item.fam || '');
+  const fm = fmMap[item.id];
+  /* lange woorden passen niet op een tegel: dan een kleinere letter in plaats van midden in een woord afbreken */
+  const lw = Math.max.apply(null, String(item.name).split(/\s+/).map(w => w.length));
+  const nameCls = lw >= 12 ? ' xlong' : lw >= 10 ? ' long' : '';
+  const famText = isPlaying ? '● speelt nu' : (fm ? 'FM ' + fm.mhz.toFixed(1) : (item.famLabel || item.fam || ''));
   return '<div class="tile' + (inList ? ' in' : '') + '" data-id="' + esc(item.id) + '" data-src="' + src + '" style="--c:' + esc(item.color) + ';--c2:' + shade(item.color, 0.5) + '">' +
-    '<button type="button" class="tile-main" data-act="tile" aria-pressed="' + inList + '" aria-label="' + esc(inList ? item.name + ' staat op je radio. Klik om hem eraf te halen.' : item.name + ' op je radio zetten') + '">' +
+    '<button type="button" class="tile-main" data-act="tile" aria-pressed="' + inList + '" aria-label="' + esc(inList ? item.name + ' staat in Mijn lijst. Klik om hem eruit te halen.' : item.name + ' in Mijn lijst zetten') + '">' +
       '<span class="wm" aria-hidden="true">' + esc(item.mono) + '</span>' +
       '<span class="tile-top"><span class="fam">' + esc(famText) + '</span><span class="badge" aria-hidden="true">' + ICON_PLUS + ICON_CHECK + '</span></span>' +
-      '<span class="tile-bottom"><span class="tname">' + esc(item.name) + '</span><span class="tgenre">' + esc(item.genre || '') + '</span></span>' +
+      '<span class="tile-bottom"><span class="tname' + nameCls + '">' + esc(item.name) + '</span><span class="tgenre">' + esc(item.genre || '') + '</span></span>' +
     '</button>' +
     '<button type="button" class="tile-play' + (isPlaying ? ' live' : '') + '" data-act="listen" aria-label="' + esc((isPlaying ? 'Pauzeer ' : 'Luister naar ') + item.name) + '">' + (isPlaying ? ICON_PAUSE : ICON_PLAY) + '</button>' +
   '</div>';
 }
-function kiezenItems() {
-  const custom = list.filter(s => s.custom);
-  return CATALOG.concat(custom);
-}
 function renderKiezen() {
   const q = query.trim().toLowerCase();
   const hasEigen = list.some(s => s.custom);
-  $('#fams').innerHTML = FAMS.filter(f => f !== 'Eigen' || hasEigen).map(f => '<button type="button" class="chip-f" data-fam="' + esc(f) + '" aria-pressed="' + (f === fam) + '">' + esc(f) + '</button>').join('');
+  $('#fams').innerHTML = FAMS.filter(f => (f !== 'Eigen' || hasEigen) && (f !== 'Regionaal' || settings.source === 'alles')).map(f => '<button type="button" class="chip-f" data-fam="' + esc(f) + '" aria-pressed="' + (f === fam) + '">' + esc(f) + '</button>').join('');
   const inListIds = new Set(list.map(s => s.id));
-  const items = kiezenItems().filter(x =>
-    (fam === 'Alle zenders' || (fam === 'Op mijn radio' ? inListIds.has(x.id) : x.fam === fam)) &&
+  const items = srcSet().concat(list.filter(s => s.custom)).filter(x =>
+    (fam === 'Alle zenders' || (fam === 'Mijn lijst' ? inListIds.has(x.id) : x.fam === fam)) &&
     (!q || (x.name + ' ' + x.genre + ' ' + x.fam).toLowerCase().includes(q)));
   $('#tiles').innerHTML = items.map(x => tileHTML(x, inListIds.has(x.id), 'cat')).join('');
   $('#tilesEmpty').hidden = items.length > 0;
@@ -1405,7 +2052,7 @@ function fromApi(s) {
   return {
     id: s.stationuuid, name, short: shortName(name), mono: initials(name), color: colorFor(name),
     genre: [s.countrycode, tags || (s.codec + (s.bitrate ? ' ' + s.bitrate + ' kbps' : ''))].filter(Boolean).join(' · '),
-    famLabel: s.countrycode || 'Database', fam: 'Eigen', url: s.url_resolved || s.url, favicon: isWeb(s.favicon) ? s.favicon : '', hls: !!s.hls
+    famLabel: s.countrycode || 'Database', fam: 'Eigen', url: s.url_resolved || s.url, favicon: isWeb(s.favicon) ? s.favicon : '', hls: !!s.hls, custom: true
   };
 }
 async function searchDb() {
@@ -1431,8 +2078,8 @@ async function searchDb() {
       const prev = map.get(k);
       if (!prev || score(s) > score(prev)) map.set(k, s);
     }
-    const catUrls = new Set(CATALOG.map(c => normUrl(c.url)));
-    dbResults = [...map.values()].filter(s => !catUrls.has(normUrl(s.url_resolved || s.url))).slice(0, 24).map(fromApi);
+    const known = new Set(CATALOG.map(c => normUrl(c.url)));
+    dbResults = [...map.values()].filter(s => !known.has(normUrl(s.url_resolved || s.url))).slice(0, 24).map(fromApi);
     dbState = 'done';
   } catch (e) {
     if (token !== dbToken) return;
@@ -1467,7 +2114,7 @@ $('#customForm').addEventListener('submit', e => {
   e.preventDefault();
   const name = $('#cName').value.trim(), url = $('#cUrl').value.trim();
   if (!name || !isWeb(url)) { toast('Vul een naam en een stream-adres dat met http:// of https:// begint in.'); return; }
-  if (list.some(s => normUrl(s.url) === normUrl(url))) { toast('Die stream staat al op je radio.'); return; }
+  if (list.some(s => normUrl(s.url) === normUrl(url))) { toast('Die stream staat al in Mijn lijst.'); return; }
   addToList({ id: 'u-' + Date.now().toString(36), name, url, genre: 'Eigen stream', hls: /\.m3u8(\?|$)/i.test(url) });
   $('#cName').value = ''; $('#cUrl').value = '';
 });
@@ -1488,20 +2135,20 @@ $('#importFile').addEventListener('change', async e => {
     if (!incoming.length) throw new Error('leeg');
     let added = 0;
     for (const s of incoming) if (!list.some(x => x.id === s.id || normUrl(x.url) === normUrl(s.url))) { list.push(s); added++; }
-    bag = []; saveList(); render();
-    toast(added ? added + (added === 1 ? ' zender' : ' zenders') + ' geïmporteerd.' : 'Alle zenders uit dat bestand stonden al op je radio.');
+    bag = []; saveList(); dialCache = null; render();
+    toast(added ? added + (added === 1 ? ' zender' : ' zenders') + ' geïmporteerd.' : 'Alle zenders uit dat bestand stonden al in Mijn lijst.');
   } catch (err) { toast('Dat bestand kon ik niet lezen. Kies een export van Zenderhopper.'); }
 });
 let resetArmed = null;
 $('#resetBtn').addEventListener('click', e => {
   const b = e.currentTarget;
   if (!resetArmed) {
-    b.textContent = 'Zeker? Klik nogmaals om je radio terug te zetten';
+    b.textContent = 'Zeker? Klik nogmaals om Mijn lijst terug te zetten';
     resetArmed = setTimeout(() => { resetArmed = null; b.textContent = 'Standaardlijst herstellen'; }, 4000);
     return;
   }
   clearTimeout(resetArmed); resetArmed = null; b.textContent = 'Standaardlijst herstellen';
-  list = defaultList(); bag = [];
+  list = defaultList(); bag = []; dialCache = null;
   if (current) current = byId(current.id) || current;
   saveList(); render(); toast('Standaardlijst teruggezet.');
 });
@@ -1509,19 +2156,29 @@ $('#resetBtn').addEventListener('click', e => {
 /* ---------- bediening ---------- */
 document.addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); return; }
+  const m = e.target.closest('[data-mode]'); if (m) { setMode(m.dataset.mode); return; }
+  const sr = e.target.closest('[data-src]'); if (sr) { setSource(sr.dataset.src); return; }
   const a = e.target.closest('button[data-act]'); if (!a) return;
   if (a.closest('#list') || a.closest('.tile')) return;
   const act = a.dataset.act;
   if (act === 'toggle') toggle();
-  else if (act === 'hop') next();
+  else if (act === 'hop') hop();
+  else if (act === 'next') step(1);
+  else if (act === 'prev') step(-1);
+  else if (act === 'smartNext') smartNext();
   else if (act === 'fs') (view === 'fs' ? exitFs : enterFs)();
   else if (act === 'mini') openMini();
+  else if (act === 'geo') useGeo();
+});
+document.addEventListener('click', e => {
+  const pop = $('#locPop');
+  if (!pop.hidden && !e.target.closest('#locPop') && !e.target.closest('.loc-wrap')) closeLocPop();
 });
 /* knoppen in het zwevende venster leven in een ander document */
 mini.addEventListener('click', e => {
   const a = e.target.closest('button[data-act]'); if (!a) return;
   e.stopPropagation();
-  if (a.dataset.act === 'toggle') toggle(); else if (a.dataset.act === 'hop') next();
+  if (a.dataset.act === 'toggle') toggle(); else if (a.dataset.act === 'smartNext') smartNext();
 });
 $$('[data-role="vol"]').forEach(v => {
   v.value = settings.volume;
@@ -1550,12 +2207,14 @@ $$('[data-role="minutes"]').forEach(inp => {
 document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.key === 'Escape') {
+    if (!$('#helpPanel').hidden) { setHelp(false); $('#helpBtn').focus(); return; }
+    if (!$('#locPop').hidden) { closeLocPop(); return; }
     if (!$('#modal').hidden) { closeModal(); return; }
     if (view === 'fs') { exitFs(); return; }
   }
   if (e.target.closest && e.target.closest('input, select, textarea, [contenteditable]')) return;
   if (e.key === ' ' && !e.target.closest('button, a, summary')) { e.preventDefault(); toggle(); }
-  else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); next(); }
+  else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); smartNext(); }
   else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); (view === 'fs' ? exitFs : enterFs)(); }
   else if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.target.closest('button')) {
     e.preventDefault();
@@ -1567,15 +2226,18 @@ document.addEventListener('keydown', e => {
 });
 window.matchMedia('(max-width: 720px)').addEventListener('change', () => renderList());
 
-/* klok: telt af en wisselt op tijd */
+/* klok: telt af en wisselt op tijd (alleen in Shuffle) */
 setInterval(() => {
-  if (intent && nextAt && !tuningTo && dragF == null && Date.now() >= nextAt) { nextAt = 0; next(); }
+  if (settings.mode === 'shuffle' && intent && nextAt && !tuningTo && dragF == null && dragP == null && Date.now() >= nextAt) { nextAt = 0; hop(); }
   renderClock();
 }, 250);
 
 makeDial($('#dialMain'));
 makeDial($('#dialFs'));
+$$('.seg').forEach(s => s.insertAdjacentHTML('afterbegin', '<span class="seg-thumb" aria-hidden="true"></span>'));
 render();
+placeSeg(false);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => placeSeg(false));
 })();
 </script>
 </body>
