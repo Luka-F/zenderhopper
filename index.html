@@ -509,6 +509,11 @@ body.mini-floating .help-panel{bottom:314px}
 /* naald en knop: komen met een klein beetje doorschieten tot rust, zoals aan een snaar */
 .dial .needle,.strip .nd{transition:left 1.3s cubic-bezier(.34,1.22,.52,1)}
 .knob{transition:transform 1.15s cubic-bezier(.34,1.22,.52,1)}
+/* de schijf in de knop draait rond zolang de radio speelt; de knop zelf wijst de frequentie aan */
+@keyframes zhSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.knob{background:transparent;box-shadow:0 34px 60px -20px rgba(0,0,0,.85)}
+.knob .disk{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#2A2F36,#5E6670,#2A2F36,#565E68,#2A2F36,#5E6670,#2A2F36,#565E68,#2A2F36);box-shadow:inset 0 2px 0 rgba(255,255,255,.2),inset 0 -8px 20px rgba(0,0,0,.55)}
+.knob .disk.spin{animation:zhSpin 12s linear infinite}
 /* display: warmt op bij afspelen, dimt bij pauze, en 'vangt' elke nieuwe zender */
 .readout{transition:opacity .9s ease,text-shadow .9s ease}
 .lcd.dim .readout{opacity:.6;text-shadow:0 0 14px rgba(244,162,30,.1)}
@@ -840,7 +845,7 @@ body.mini-floating .help-panel{bottom:314px}
         <div class="knob-wrap" id="knobWrap">
           <div class="skirt" aria-hidden="true"></div>
           <button class="knob" type="button" id="knob" aria-label="Afstemknop: sleep rond om af te stemmen, of gebruik de pijltjestoetsen">
-            <span class="rim" aria-hidden="true"></span><span class="ind" aria-hidden="true"></span>
+            <span class="disk" aria-hidden="true"><span class="rim"></span><span class="ind"></span></span>
           </button>
           <div class="cap-c" aria-hidden="true"><small>AFSTEMMEN</small><b data-role="capMono">—</b></div>
         </div>
@@ -1562,6 +1567,43 @@ function knobFrac(e) {
 }
 function knobDrag(frac) { if (band === 'online') beginDrag(null, 2 + frac * 96); else beginDrag(Math.round((LO + frac * (EDGE - LO)) * 10) / 10, null); }
 const knob = $('#knob');
+/* schijf van de draaiknop: draait rond zolang de radio in volledig scherm speelt. Stopt dat (vastpakken, pauze,
+   slepen, afstemmen), dan bevriezen we de huidige stand en draait hij via de kortste weg terug naar de wijzer van de zender. */
+const disk = knob.querySelector('.disk');
+let spinOn = false, diskTimer = null;
+function diskAngleNow() {
+  const m = getComputedStyle(disk).transform;
+  const v = m && m.match(/matrix\(([^)]+)\)/);
+  if (!v) return 0;
+  const [a, b] = v[1].split(',').map(Number);
+  return (Math.atan2(b, a) * 180 / Math.PI + 360) % 360;
+}
+function updateDisk(wanted) {
+  if (wanted) {
+    if (!spinOn && !disk.classList.contains('settling')) {
+      spinOn = true;
+      disk.style.transition = 'none'; disk.style.transform = 'rotate(0deg)';
+      disk.classList.add('spin');
+    }
+    return;
+  }
+  if (!spinOn) return;
+  spinOn = false;
+  const a = diskAngleNow();
+  disk.classList.remove('spin');
+  disk.style.transition = 'none';
+  disk.style.transform = 'rotate(' + a.toFixed(1) + 'deg)';
+  void disk.offsetWidth;
+  disk.classList.add('settling');
+  disk.style.transition = 'transform .8s cubic-bezier(.34,1.22,.52,1)';
+  disk.style.transform = 'rotate(' + (a > 180 ? 360 : 0) + 'deg)';
+  clearTimeout(diskTimer);
+  diskTimer = setTimeout(() => {
+    disk.classList.remove('settling');
+    disk.style.transition = 'none'; disk.style.transform = 'rotate(0deg)';
+    renderNow();
+  }, 850);
+}
 knob.addEventListener('pointerdown', e => {
   const r = knob.getBoundingClientRect();
   knobCenter = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
@@ -1688,6 +1730,7 @@ function renderNow() {
   }
   buildRing();
   knob.style.transform = 'rotate(' + (((t.pos - 2) / 96) * 270 - 135).toFixed(1) + 'deg)';
+  updateDisk(view === 'fs' && live);
   knob.setAttribute('aria-valuetext', (st ? st.name + ', ' : '') + readout);
   $$('.ringchip').forEach(b => b.classList.toggle('air', b.dataset.id === sid));
   renderStrip(t.pos, sid);
