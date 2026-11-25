@@ -72,6 +72,13 @@ body.mode-radio .only-shuffle, body.mode-shuffle .only-radio{display:none!import
 /* het oranje blokje glijdt naar de gekozen modus */
 .seg-thumb{position:absolute;top:4px;bottom:4px;left:4px;width:0;border-radius:999px;background:var(--amber);box-shadow:0 4px 14px -4px rgba(244,162,30,.65),inset 0 1px 0 rgba(255,255,255,.35);transition:left .42s cubic-bezier(.3,1.25,.5,1),width .42s cubic-bezier(.3,1.25,.5,1)}
 .seg.instant .seg-thumb{transition:none}
+/* kleine schakelaar onder het volume: Hoge kwaliteit / Data sparen */
+.seg-sm button{height:30px;padding:0 12px;font-size:12px}
+.device .seg-sm .lbl{display:inline}
+.device .seg-sm button{padding:0 12px}
+/* welke stream speelt: klein etiket zoals 'STEREO' op een tuner */
+.qbadge{padding:3px 7px;border-radius:6px;border:1px solid rgba(255,255,255,.18);font:500 11px/1 var(--f-mono);letter-spacing:.12em;color:var(--lcd-soft)}
+@media (max-width:720px){ .qbadge{display:none} }
 .status{display:inline-flex;align-items:center;gap:8px;color:var(--lcd-muted)}
 .status i{width:8px;height:8px;border-radius:50%;background:currentColor}
 .status[data-s="live"]{color:var(--amber)}
@@ -370,7 +377,7 @@ body.mode-shuffle .row.off .row-name{color:var(--muted)}
   .fs{padding:8px}
   .fs .lcd{padding:14px 14px 16px}
   .fs-time{display:none}
-  .loc-btn{width:auto!important;padding:0 10px!important}
+  .set-btn{width:auto!important;padding:0 10px!important}
   .main{margin-top:16px;gap:14px}
   .readout{font-size:64px}
   .logo.xl{width:56px;height:56px;font-size:18px}
@@ -399,6 +406,23 @@ body.mode-shuffle .row.off .row-name{color:var(--muted)}
 .lcd-top{z-index:8}
 .loc-pop{z-index:9}
 .loc-wrap{position:relative;display:inline-flex}
+/* knop Instellingen en het menu */
+.set-btn[aria-expanded="true"]{background:rgba(244,162,30,.16)}
+.set-chev{transition:transform .25s}
+.set-btn[aria-expanded="true"] .set-chev{transform:rotate(180deg)}
+/* twee kolommen: links locatie, rechts geluid en zenders; op de telefoon onder elkaar */
+.loc-pop{width:720px;max-width:calc(100% - 60px);max-height:calc(100% - 90px);overflow-y:auto;overflow-x:hidden;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px 24px;align-items:start}
+.set-col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.set-col-r{padding-left:24px;border-left:1px solid rgba(255,255,255,.08)}
+@media (max-width:820px){ .loc-pop{grid-template-columns:minmax(0,1fr)} .set-col-r{padding:16px 0 0;border-left:0;border-top:1px solid rgba(255,255,255,.08)} }
+.set-cap{font:11px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--lcd-muted)}
+.set-place{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;color:var(--lcd-ink)}
+.set-std{font-weight:400;font-size:13px;color:var(--lcd-muted)}
+.set-sep{height:1px;margin:4px 0;background:rgba(255,255,255,.08)}
+.loc-pop .seg{display:flex}
+.loc-pop .seg button{flex:1;justify-content:center;height:34px;padding:0 8px;font-size:12.5px;white-space:nowrap}
+.fs-exit{width:40px;height:40px}
+@media (max-width:420px){ .loc-pop .seg button{height:auto;min-height:34px;padding:4px 6px;white-space:normal;line-height:1.15;font-size:12px} }
 .note-card{position:absolute;top:calc(100% + 12px);left:0;z-index:6;width:320px;max-width:calc(100vw - 84px);padding:14px 14px 12px 16px;border-radius:16px;background:#F2EFE7;color:#14181D;box-shadow:0 18px 40px -14px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:10px;font:400 13px/1.45 var(--f-body);letter-spacing:0;text-transform:none;text-align:left}
 .note-card.row{flex-direction:row;align-items:flex-start;padding:11px 10px 11px 14px;width:300px}
 .note-arrow{position:absolute;top:-5px;left:18px;width:11px;height:11px;border-radius:2px;background:#F2EFE7;transform:rotate(45deg)}
@@ -508,10 +532,6 @@ body.mini-floating .help-panel{bottom:314px}
       <p data-role="tagline"></p>
     </div>
     <div class="top-actions">
-      <div class="src" role="radiogroup" aria-label="Welke zenders">
-        <button type="button" role="radio" data-src="fm" aria-checked="true">Nederland.FM · <span data-role="cntFm"></span></button>
-        <button type="button" role="radio" data-src="alles" aria-checked="false">Alle zenders · <span data-role="cntAll"></span></button>
-      </div>
       <button class="btn" type="button" data-go="kiezen" aria-label="Zenders kiezen">
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
         <span class="lbl">Zenders kiezen</span>
@@ -525,7 +545,7 @@ body.mini-floating .help-panel{bottom:314px}
       <div class="edge l" aria-hidden="true"></div>
       <div class="lcd-top">
         <div class="lcd-left">
-          <div class="seg" role="radiogroup" aria-label="Modus">
+          <div class="seg" data-seg="mode" role="radiogroup" aria-label="Modus">
             <button type="button" role="radio" data-mode="radio" aria-checked="false">
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="2.5"/><path d="M7 8l9-4"/><circle cx="8.5" cy="14" r="2.5"/><path d="M14 12.5h4M14 15.5h4"/></svg>
               <span class="lbl">Radio</span>
@@ -537,13 +557,14 @@ body.mini-floating .help-panel{bottom:314px}
           </div>
           <span class="status" data-role="status" data-s="off"><i></i><span data-role="statusText">Uit</span></span>
           <span class="count" data-role="modeInfo"></span>
+          <span class="qbadge" data-role="qbadge" hidden></span>
         </div>
         <div class="lcd-right">
           <div class="loc-wrap">
-            <button class="ghost loc-btn" type="button" id="locBtn" aria-expanded="false">
-              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0114 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
-              <span data-role="locName">Amsterdam</span>
-              <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <button class="ghost set-btn" type="button" id="locBtn" aria-expanded="false" aria-controls="locPop" aria-label="Instellingen: locatie, geluid en zenders">
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
+              <span class="lbl">Instellingen</span>
+              <svg class="set-chev" aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <!-- eerste bezoek: kleine vraag onder de locatieknop -->
             <div class="note-card" id="welcomeTip" role="dialog" aria-labelledby="welkomVraag" hidden>
@@ -582,8 +603,10 @@ body.mini-floating .help-panel{bottom:314px}
         </div>
       </div>
 
-      <div class="loc-pop" id="locPop" role="dialog" aria-label="Locatie kiezen" hidden>
-        <h3>Waar luister je?</h3>
+      <div class="loc-pop" id="locPop" role="dialog" aria-label="Instellingen" hidden>
+        <div class="set-col">
+        <div class="set-cap">Locatie</div>
+        <div class="set-place"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0114 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span data-role="locName">Amsterdam</span><span class="set-std" data-role="locDefault"></span></div>
         <p id="locIntro"></p>
         <button class="loc-geo" type="button" data-act="geo">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="var(--amber)" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
@@ -595,11 +618,26 @@ body.mini-floating .help-panel{bottom:314px}
         </form>
         <div class="loc-err" id="locErr" role="alert" hidden></div>
         <div class="loc-quick" id="locQuick"></div>
+        </div>
+        <div class="set-col set-col-r">
+        <div class="set-cap">Geluid</div>
+        <div class="seg seg-sm" data-seg="quality" role="radiogroup" aria-label="Geluidskwaliteit">
+          <button type="button" role="radio" data-quality="hoog" aria-checked="true">Hoge kwaliteit</button>
+          <button type="button" role="radio" data-quality="zuinig" aria-checked="false">Data sparen</button>
+        </div>
+        <p data-role="qIntro"></p>
+        <div class="set-sep" aria-hidden="true"></div>
+        <div class="set-cap">Zenders</div>
+        <div class="seg seg-sm" data-seg="source" role="radiogroup" aria-label="Welke zenders">
+          <button type="button" role="radio" data-src="fm" aria-checked="true">Nederland.FM · <span data-role="cntFm"></span></button>
+          <button type="button" role="radio" data-src="alles" aria-checked="false">Alle zenders · <span data-role="cntAll"></span></button>
+        </div>
+        </div>
       </div>
 
       <div class="main">
         <div class="idcol">
-          <div class="freq"><span class="unit">FM</span><span class="readout tab" data-role="readout">—</span><span class="unit u-mhz">MHz<span class="tip q" tabindex="0" role="button" data-role="freqTip" aria-label="Waarom is dit een voorbeeld? Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam." hidden>?<span class="tipbox" role="tooltip">Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam. Waar jij luistert kan dezelfde zender op een andere frequentie zitten. Kies je plaats via de locatieknop op de radio.</span></span></span></div>
+          <div class="freq"><span class="unit">FM</span><span class="readout tab" data-role="readout">—</span><span class="unit u-mhz">MHz<span class="tip q" tabindex="0" role="button" data-role="freqTip" aria-label="Waarom is dit een voorbeeld? Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam." hidden>?<span class="tipbox" role="tooltip">Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam. Waar jij luistert kan dezelfde zender op een andere frequentie zitten. Kies je plaats onder Instellingen op de radio.</span></span></span></div>
           <div class="idrow">
             <span data-role="logo" data-size="xl"></span>
             <div style="min-width:0">
@@ -628,7 +666,6 @@ body.mini-floating .help-panel{bottom:314px}
         </div>
       </div>
 
-      <div class="presets only-radio" role="group" aria-label="Voorkeuzetoetsen" data-role="presets"></div>
       <div class="hierna only-shuffle">
         <div class="hn-id">
           <span data-role="nextLogo"></span>
@@ -640,7 +677,6 @@ body.mini-floating .help-panel{bottom:314px}
 
       <div class="dial" id="dialMain"></div>
       <div class="lcd-foot">
-        <span class="hint" data-role="footHint"></span>
         <span data-role="dialCount"></span>
       </div>
     </div>
@@ -755,7 +791,7 @@ body.mini-floating .help-panel{bottom:314px}
     <div class="edge l" aria-hidden="true"></div>
     <div class="lcd-top">
       <div class="lcd-left">
-        <div class="seg" role="radiogroup" aria-label="Modus">
+        <div class="seg" data-seg="mode" role="radiogroup" aria-label="Modus">
           <button type="button" role="radio" data-mode="radio" aria-checked="false"><span class="lbl">Radio</span></button>
           <button type="button" role="radio" data-mode="shuffle" aria-checked="true"><span class="lbl">Shuffle</span></button>
         </div>
@@ -763,16 +799,14 @@ body.mini-floating .help-panel{bottom:314px}
       </div>
       <span class="fs-time tab" id="fsTime"></span>
       <div class="lcd-right">
-        <label class="wissel only-shuffle"><span>Wissel elke</span><input type="number" min="0.25" max="180" step="0.25" inputmode="decimal" data-role="minutes" aria-label="Wissel elke zoveel minuten"><span>min</span></label>
-        <button class="ghost" type="button" data-act="fs" style="height:40px">
+        <button class="ghost icon fs-exit" type="button" data-act="fs" aria-label="Scherm verlaten" title="Scherm verlaten (Esc)">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
-          Scherm verlaten
         </button>
       </div>
     </div>
     <div class="fs-main">
       <div class="fs-left">
-        <div class="freq"><span class="unit">FM</span><span class="readout tab" data-role="readout">—</span><span class="unit u-mhz">MHz<span class="tip q" tabindex="0" role="button" data-role="freqTip" aria-label="Waarom is dit een voorbeeld? Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam." hidden>?<span class="tipbox" role="tooltip">Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam. Waar jij luistert kan dezelfde zender op een andere frequentie zitten. Kies je plaats via de locatieknop op de radio.</span></span></span></div>
+        <div class="freq"><span class="unit">FM</span><span class="readout tab" data-role="readout">—</span><span class="unit u-mhz">MHz<span class="tip q" tabindex="0" role="button" data-role="freqTip" aria-label="Waarom is dit een voorbeeld? Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam." hidden>?<span class="tipbox" role="tooltip">Je hebt nog geen plaats gekozen, dus dit is de frequentie in Amsterdam. Waar jij luistert kan dezelfde zender op een andere frequentie zitten. Kies je plaats onder Instellingen op de radio.</span></span></span></div>
         <div class="idrow">
           <span data-role="logo" data-size="xl"></span>
           <div style="min-width:0">
@@ -812,7 +846,6 @@ body.mini-floating .help-panel{bottom:314px}
         </div>
       </div>
     </div>
-    <div class="presets" role="group" aria-label="Voorkeuzetoetsen" data-role="presets"></div>
     <div class="dial" id="dialFs"></div>
   </section>
 </div>
@@ -910,7 +943,7 @@ body.mini-floating .help-panel{bottom:314px}
   <div class="help-tech">
     <span class="help-cap">De techniek</span>
     <dl>
-      <dt>Geluid</dt><dd>Rechtstreeks van de omroepen (MP3, AAC, HLS). Twee spelers vloeien in elkaar over, dus geen stilte bij het wisselen.</dd>
+      <dt>Geluid</dt><dd>Rechtstreeks van de omroepen. Per zender de best klinkende geteste stream (MP3 tot 320 kbps of AAC); met Data sparen een lichtere. Twee spelers vloeien in elkaar over, dus geen stilte bij het wisselen.</dd>
       <dt>Frequenties</dt><dd><span data-role="helpMasts">83</span> zendmasten uit het Antenneregister van de RDI. Per zender kiest de site de mast die jij het best ontvangt.</dd>
       <dt>Locatie</dt><dd>Woonplaatsen en postcodes via PDOK (Kadaster). Standaard Amsterdam.</dd>
       <dt>Zenders</dt><dd>Lijsten van nederland.fm en radio.nl, plus de open database van radio-browser.info.</dd>
@@ -1062,7 +1095,7 @@ async function geocode(q) {
 /* ---------- Mijn lijst ---------- */
 const catById = id => CATALOG.find(c => c.id === id);
 function fromCatalog(c, on) {
-  return { id: c.id, name: c.name, short: c.short, genre: c.genre, mono: c.mono, color: c.color, url: c.url, fam: c.fam, on: on ?? (c.def ? !!c.on : true), hls: /\.m3u8(\?|$)/i.test(c.url), favicon: '', custom: false };
+  return { id: c.id, name: c.name, short: c.short, genre: c.genre, mono: c.mono, color: c.color, url: c.url, q: Array.isArray(c.q) ? c.q : null, fam: c.fam, on: on ?? (c.def ? !!c.on : true), hls: /\.m3u8(\?|$)/i.test(c.url), favicon: '', custom: false };
 }
 function makeCustom(o) {
   const name = String(o.name || 'Naamloos').trim().slice(0, 80) || 'Naamloos';
@@ -1105,7 +1138,9 @@ const settings = {
   source: old.source === 'alles' ? 'alles' : 'fm',
   /* eigen plaats; null = niet gekozen, dan is Amsterdam de standaard */
   myLoc: old.myLoc && typeof old.myLoc.lat === 'number' && typeof old.myLoc.lon === 'number' && typeof old.myLoc.name === 'string' ? old.myLoc : null,
-  asked: old.asked === true
+  asked: old.asked === true,
+  /* geluidskwaliteit: 'hoog' = beste stream, 'zuinig' = lichtste stream (data sparen); standaard volgt de bespaarstand van de browser */
+  quality: old.quality === 'zuinig' || old.quality === 'hoog' ? old.quality : (navigator.connection && navigator.connection.saveData ? 'zuinig' : 'hoog')
 };
 if (settings.myLoc) settings.asked = true;
 delete old.loc;
@@ -1226,13 +1261,29 @@ async function attachSource(el, st, url) {
   }
   el.src = url;
 }
-/* http-zenders: eerst https proberen; op een https-site is http geblokkeerd, lokaal mag het als terugval */
+/* volgorde waarin we streams proberen: eerst de geteste varianten van de zender (beste klank of zuinigste eerst),
+   dan het gewone adres. Werkt er een niet, dan pakt tuneTo vanzelf de volgende.
+   http-adressen: eerst https; op een https-site is http geblokkeerd, lokaal mag het als terugval */
+const klank = v => v[2] * (v[1] === 'aac' ? 1.5 : 1);   /* AAC klinkt bij dezelfde bitrate ongeveer als MP3 met 1,5 keer zoveel kbps */
 function streamCandidates(st) {
-  if (!/^http:\/\//i.test(st.url)) return [st.url];
-  const secure = 'https://' + st.url.slice(7);
-  if (pageIsSecure) return [secure];
-  return st.httpOnly ? [st.url] : [secure, st.url];
+  const out = [];
+  const add = u => { if (u && !out.includes(u)) out.push(u); };
+  if (Array.isArray(st.q) && st.q.length) {
+    const q = st.q.slice().sort(settings.quality === 'zuinig'
+      ? (a, b) => a[2] - b[2] || (a[1] === 'aac' ? -1 : 1)
+      : (a, b) => klank(b) - klank(a) || (a[1] === 'mp3' ? -1 : 1));
+    q.forEach(v => add(v[0]));
+  }
+  if (!/^http:\/\//i.test(st.url)) add(st.url);
+  else {
+    const secure = 'https://' + st.url.slice(7);
+    if (pageIsSecure) add(secure);
+    else if (st.httpOnly) add(st.url);
+    else { add(secure); add(st.url); }
+  }
+  return out;
 }
+const streamInfo = (st, url) => { const v = (st.q || []).find(x => x[0] === url); return v ? { codec: v[1], kbps: v[2] } : null; };
 function waitPlaying(el, ms) {
   return new Promise(res => {
     let done = false;
@@ -1296,9 +1347,11 @@ async function tuneTo(st, opts = {}) {
     if (res) { usedUrl = cands[i]; break; }
   }
   tuningTo = null;
-  if (res === true && cands.length > 1) {
-    if (usedUrl !== st.url) st.url = usedUrl; else st.httpOnly = true;
+  if (res === true && /^http:\/\//i.test(st.url)) {
+    if (usedUrl === 'https://' + st.url.slice(7)) st.url = usedUrl;
+    else if (usedUrl === st.url && cands.includes('https://' + st.url.slice(7))) st.httpOnly = true;
   }
+  if (res === true) { st.now = streamInfo(st, usedUrl); st.nowUrl = usedUrl; }
   if (res === 'blocked') {
     resetDeck(el); intent = false; render();
     toast('Je browser wil eerst een klik. Druk op afspelen.');
@@ -1604,6 +1657,8 @@ function renderNow() {
   $$('[data-role="freqTip"]').forEach(el => el.hidden = !showQ);
   $$('.lcd').forEach(el => el.classList.toggle('dim', !intent && !t.dragging));
   $$('.ring .play, .fs-transport .play').forEach(b => b.classList.toggle('breath', live));
+  const qi = live && current && current.now;
+  $$('[data-role="qbadge"]').forEach(el => { el.hidden = !qi; if (qi) { el.textContent = current.now.codec.toUpperCase() + ' ' + current.now.kbps; el.title = 'Deze zender speelt nu als ' + current.now.codec.toUpperCase() + ' met ' + current.now.kbps + ' kbps'; } });
   $$('[data-role="capMono"]').forEach(el => el.textContent = st ? st.mono || '—' : '—');
   const nx = peekNext();
   $$('[data-role="next"]').forEach(el => el.textContent = nx ? nx.name : '—');
@@ -1635,7 +1690,6 @@ function renderNow() {
   knob.style.transform = 'rotate(' + (((t.pos - 2) / 96) * 270 - 135).toFixed(1) + 'deg)';
   knob.setAttribute('aria-valuetext', (st ? st.name + ', ' : '') + readout);
   $$('.ringchip').forEach(b => b.classList.toggle('air', b.dataset.id === sid));
-  $$('.preset').forEach(b => { const on = b.dataset.id === current?.id; b.setAttribute('aria-pressed', String(on)); b.querySelector('.led').classList.toggle('on', on && intent); });
   renderStrip(t.pos, sid);
   document.title = live && current ? current.name + ' · Zenderhopper' : 'Zenderhopper';
   renderClock();
@@ -1664,16 +1718,13 @@ function renderStatic() {
   document.body.classList.toggle('mode-shuffle', !radio);
   $$('[data-mode]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === settings.mode)));
   $$('[data-src]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.src === settings.source)));
+  $$('[data-quality]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.quality === settings.quality)));
   $$('[data-role="cntFm"]').forEach(el => el.textContent = CATALOG.filter(c => c.set === 'fm').length);
   $$('[data-role="cntAll"]').forEach(el => el.textContent = CATALOG.length);
   $$('[data-role="tagline"]').forEach(el => el.textContent = radio ? 'Gewoon radio: kies een zender en hij blijft spelen.' : 'Je eigen zenders, om de paar minuten willekeurig gewisseld.');
   $$('[data-role="modeInfo"]').forEach(el => el.textContent = radio ? 'Je kiest zelf de zender' : enabled().length + ' zenders in rotatie');
   $$('[data-role="locName"]').forEach(el => el.textContent = effLoc().name);
-  $$('[data-role="footHint"]').forEach(el => el.textContent = band === 'online' ? 'Online zenders · schuif helemaal naar links om terug te gaan naar FM' : 'Echte FM-frequenties · schuif voorbij 108 voor de online zenders');
   $$('[data-role="dialCount"]').forEach(el => el.textContent = ds.fm.length + ' FM-zenders in ' + effLoc().name + (ds.online.length ? ' · ' + ds.online.length + ' zonder FM, via internet' : ''));
-  const presets = (radio ? list : enabled()).slice(0, 6);
-  const phtml = presets.map(s => '<button type="button" class="preset" data-id="' + esc(s.id) + '" aria-pressed="false"><span class="pn">' + (fmMap[s.id] ? fmMap[s.id].mhz.toFixed(1) : 'WEB') + '</span>' + logoHTML(s) + '<span class="pname">' + esc(s.name) + '</span><span class="led" aria-hidden="true"></span></button>').join('');
-  $$('[data-role="presets"]').forEach(el => { if (el.dataset.k !== phtml) { el.innerHTML = phtml; el.dataset.k = phtml; } });
 }
 function renderList() {
   const radio = settings.mode === 'radio';
@@ -1747,11 +1798,24 @@ function setMode(m) {
   if (m === 'shuffle' && intent) nextAt = Date.now() + intervalMs();
   if (current) setBandFor(current);
   render();
-  placeSeg(true);
+  placeSeg(true, 'mode');
 }
-/* zet het glijdende blokje onder de gekozen modus; met animate glijdt het en tikt de tekst daarna aan */
-function placeSeg(animate) {
+/* Hoge kwaliteit / Data sparen: speelt er iets, dan stemmen we dezelfde zender opnieuw af op de andere stream */
+function setQuality(q) {
+  if (q === settings.quality) return;
+  settings.quality = q; saveSettings();
+  render();
+  placeSeg(true, 'quality');
+  if (intent && current && !tuningTo && Array.isArray(current.q) && streamCandidates(current)[0] !== current.nowUrl) {
+    pausedRemaining = nextAt ? Math.max(0, nextAt - Date.now()) : 0;
+    tuneTo(current, { manual: true, resume: true });
+  }
+  toast(q === 'zuinig' ? 'Data sparen: waar het kan een lichtere stream.' : 'Hoge kwaliteit: per zender de best klinkende stream.');
+}
+/* zet het glijdende blokje onder de gekozen knop; met animate glijdt het en tikt de tekst daarna aan */
+function placeSeg(animate, which) {
   $$('.seg').forEach(seg => {
+    if (which && seg.dataset.seg !== which) return;
     const b = seg.querySelector('button[aria-checked="true"]'), th = seg.querySelector('.seg-thumb');
     if (!b || !th || !b.offsetWidth) return;
     if (!animate) seg.classList.add('instant');
@@ -1767,6 +1831,7 @@ function setSource(src) {
   settings.source = src; saveSettings();
   if (src === 'fm' && fam === 'Regionaal') fam = 'Alle zenders';
   render();
+  placeSeg(true, 'source');
 }
 /* ---------- locatie: eerste vraag, 'Liever niet', GPS en het locatievenster ---------- */
 let geoBusy = false, declinedShown = false, declTimer = null;
@@ -1777,13 +1842,16 @@ function renderLocUi() {
   $('#welcomeTip').hidden = settings.asked || popOpen || screen !== 'radio';
   $('#declinedTip').hidden = !declinedShown || popOpen;
   $$('[data-role="geoLabel"]').forEach(el => el.textContent = geoBusy ? 'Locatie ophalen…' : 'Gebruik mijn locatie');
+  $$('[data-role="locDefault"]').forEach(el => el.textContent = settings.myLoc ? '' : '· standaard');
+  $$('[data-role="qIntro"]').forEach(el => el.textContent = settings.quality === 'zuinig' ? 'Een lichtere stream waar dat kan, bijvoorbeeld AAC 32 bij NPO. Handig op mobiele data.' : 'Per zender de best klinkende stream: MP3 tot 320 kbps of AAC.');
   $('#locIntro').textContent = settings.myLoc
-    ? 'De schaal toont de echte FM-frequenties die je in ' + settings.myLoc.name + ' ontvangt. Ergens anders? Kies hieronder een andere plaats.'
-    : 'Nu staat Amsterdam als standaard ingesteld. Kies je eigen plaats, dan toont de schaal de echte FM-frequenties die je daar ontvangt.';
+    ? 'De schaal toont de echte FM-frequenties die je hier ontvangt. Ergens anders? Kies hieronder een andere plaats.'
+    : 'Kies je eigen plaats, dan toont de schaal de echte FM-frequenties die je daar ontvangt.';
 }
 function openLocPop() {
   $('#locPop').hidden = false; $('#locBtn').setAttribute('aria-expanded', 'true');
   declinedShown = false; hideLocErr(); renderLocUi();
+  placeSeg(false, 'quality'); placeSeg(false, 'source');
   setTimeout(() => $('#locInput').focus(), 30);
 }
 function closeLocPop() { $('#locPop').hidden = true; $('#locBtn').setAttribute('aria-expanded', 'false'); renderLocUi(); }
@@ -1997,7 +2065,6 @@ $('#listToggle').addEventListener('click', () => {
   if (isNarrow()) settings.compactListOpen = !settings.compactListOpen; else settings.listOpen = !settings.listOpen;
   saveSettings(); renderList();
 });
-document.addEventListener('click', e => { const b = e.target.closest('.preset'); if (b) playStation(stationById(b.dataset.id)); });
 
 /* ---------- Zenders kiezen ---------- */
 let fam = 'Alle zenders', query = '', dbResults = [], dbState = 'idle', dbTimer = null, dbToken = 0;
@@ -2157,6 +2224,7 @@ $('#resetBtn').addEventListener('click', e => {
 document.addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); return; }
   const m = e.target.closest('[data-mode]'); if (m) { setMode(m.dataset.mode); return; }
+  const qb = e.target.closest('[data-quality]'); if (qb) { setQuality(qb.dataset.quality); return; }
   const sr = e.target.closest('[data-src]'); if (sr) { setSource(sr.dataset.src); return; }
   const a = e.target.closest('button[data-act]'); if (!a) return;
   if (a.closest('#list') || a.closest('.tile')) return;
