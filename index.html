@@ -72,6 +72,13 @@ body.mode-radio .only-shuffle, body.mode-shuffle .only-radio{display:none!import
 /* het oranje blokje glijdt naar de gekozen modus */
 .seg-thumb{position:absolute;top:4px;bottom:4px;left:4px;width:0;border-radius:999px;background:var(--amber);box-shadow:0 4px 14px -4px rgba(244,162,30,.65),inset 0 1px 0 rgba(255,255,255,.35);transition:left .42s cubic-bezier(.3,1.25,.5,1),width .42s cubic-bezier(.3,1.25,.5,1)}
 .seg.instant .seg-thumb{transition:none}
+/* lichte schakelaar op de pagina zelf: Nederland | Internationaal */
+.seg-light{background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.seg-light button{height:36px;padding:0 16px;color:var(--ink)}
+.seg-light button[aria-checked="true"]{color:var(--bg)}
+.seg-light .seg-thumb{background:var(--ink);box-shadow:0 4px 12px -6px rgba(0,0,0,.5)}
+.db-section{display:flex;flex-direction:column;gap:12px;padding-top:18px;border-top:1px solid var(--line)}
+.more-body{display:flex;flex-direction:column;gap:12px;padding-top:12px}
 /* kleine schakelaar onder het volume: Hoge kwaliteit / Data sparen */
 .seg-sm button{height:30px;padding:0 12px;font-size:12px}
 .device .seg-sm .lbl{display:inline}
@@ -138,7 +145,7 @@ body.mode-radio .only-shuffle, body.mode-shuffle .only-radio{display:none!import
 .hn-name{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hn-bar{display:flex;align-items:center;gap:12px;flex:2 1 280px;min-width:0}
 .bar{flex:1;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.1)}
-.bar span{display:block;height:100%;width:0;border-radius:4px;background:var(--amber);transition:width 1s linear}
+.bar span{display:block;height:100%;width:100%;background:var(--amber);transform:scaleX(0);transform-origin:left center;transition:transform 1s linear}
 .wissel{display:flex;align-items:center;gap:10px;font:500 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--lcd-muted)}
 .wissel input{width:76px;height:38px;padding:0 8px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:var(--lcd-ink);font:500 15px var(--f-mono);letter-spacing:0;text-align:center}
 .wissel input[aria-invalid="true"]{border-color:#F0695C}
@@ -492,7 +499,7 @@ body.mini-floating .help-panel{bottom:314px}
 @keyframes zhFade{from{opacity:0}to{opacity:1}}
 @keyframes zhTune{0%{opacity:.2;filter:blur(4px)}30%{opacity:.85;filter:blur(1px)}45%{opacity:.55;filter:blur(.5px)}100%{opacity:1;filter:none}}
 @keyframes zhSwap{from{opacity:.4;transform:scale(.9)}to{opacity:1;transform:none}}
-@keyframes zhBreath{0%,100%{box-shadow:0 0 0 0 rgba(244,162,30,0),0 14px 34px -10px rgba(244,162,30,.6)}50%{box-shadow:0 0 0 8px rgba(244,162,30,.1),0 16px 42px -8px rgba(244,162,30,.78)}}
+@keyframes zhBreath{0%,100%{opacity:0}50%{opacity:1}}
 .loc-pop,.note-card{animation:zhPop .24s cubic-bezier(.2,.8,.2,1) both;transform-origin:20px 0}
 .help-panel,.mini.floating,.sheet{animation:zhRise .38s cubic-bezier(.2,.8,.2,1) both}
 .modal,.fs{animation:zhFade .3s ease-out both}
@@ -513,13 +520,18 @@ body.mini-floating .help-panel{bottom:314px}
 @keyframes zhSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .knob{background:transparent;box-shadow:0 34px 60px -20px rgba(0,0,0,.85)}
 .knob .disk{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#2A2F36,#5E6670,#2A2F36,#565E68,#2A2F36,#5E6670,#2A2F36,#565E68,#2A2F36);box-shadow:inset 0 2px 0 rgba(255,255,255,.2),inset 0 -8px 20px rgba(0,0,0,.55)}
-.knob .disk.spin{animation:zhSpin 12s linear infinite}
+.knob .disk.spin{animation:zhSpin 12s linear infinite;will-change:transform}
+/* in volledig scherm hoeft wat erachter ligt niet getekend te worden */
+body.fs-on #screenRadio,body.fs-on #screenKiezen,body.fs-on .help-btn{visibility:hidden}
 /* display: warmt op bij afspelen, dimt bij pauze, en 'vangt' elke nieuwe zender */
 .readout{transition:opacity .9s ease,text-shadow .9s ease}
 .lcd.dim .readout{opacity:.6;text-shadow:0 0 14px rgba(244,162,30,.1)}
 .tune-in{animation:zhTune .75s cubic-bezier(.2,.8,.2,1)}
 .logo.swap-in{animation:zhSwap .5s cubic-bezier(.34,1.4,.5,1)}
-.play.breath{animation:zhBreath 3.6s ease-in-out infinite}
+/* ademende gloed: een vaste gloed die alleen in doorzichtigheid ademt; dat doet de grafische kaart, niet de processor */
+.play{position:relative}
+.play::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;opacity:0;box-shadow:0 0 0 8px rgba(244,162,30,.1),0 16px 42px -8px rgba(244,162,30,.78)}
+.play.breath::after{animation:zhBreath 3.6s ease-in-out infinite;will-change:opacity}
 /* Radio/Shuffle: de tekstkleur wisselt halverwege het glijden, daarna tikt de gekozen tekst even aan */
 @keyframes zhTick{0%{transform:scale(1)}40%{transform:scale(1.12)}70%{transform:scale(.97)}100%{transform:scale(1)}}
 .seg button{transition:transform .14s cubic-bezier(.3,1.4,.6,1),color .22s ease .14s}
@@ -537,6 +549,10 @@ body.mini-floating .help-panel{bottom:314px}
       <p data-role="tagline"></p>
     </div>
     <div class="top-actions">
+      <div class="seg seg-light" data-seg="region" role="radiogroup" aria-label="Nederlandse of internationale radio">
+        <button type="button" role="radio" data-region="nl" aria-checked="true">Nederland</button>
+        <button type="button" role="radio" data-region="int" aria-checked="false">Internationaal</button>
+      </div>
       <button class="btn" type="button" data-go="kiezen" aria-label="Zenders kiezen">
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
         <span class="lbl">Zenders kiezen</span>
@@ -631,11 +647,13 @@ body.mini-floating .help-panel{bottom:314px}
           <button type="button" role="radio" data-quality="zuinig" aria-checked="false">Data sparen</button>
         </div>
         <p data-role="qIntro"></p>
+        <div data-role="srcSection" class="set-col-sub">
         <div class="set-sep" aria-hidden="true"></div>
         <div class="set-cap">Zenders</div>
         <div class="seg seg-sm" data-seg="source" role="radiogroup" aria-label="Welke zenders">
           <button type="button" role="radio" data-src="fm" aria-checked="true">Nederland.FM · <span data-role="cntFm"></span></button>
           <button type="button" role="radio" data-src="alles" aria-checked="false">Alle zenders · <span data-role="cntAll"></span></button>
+        </div>
         </div>
         </div>
       </div>
@@ -696,7 +714,7 @@ body.mini-floating .help-panel{bottom:314px}
           <span class="list-sub" id="listSub"></span>
         </button>
       </h2>
-      <button class="linkbtn" type="button" data-go="kiezen">
+      <button class="linkbtn" type="button" id="listAdd" data-go="kiezen">
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Zenders toevoegen
       </button>
@@ -725,7 +743,7 @@ body.mini-floating .help-panel{bottom:314px}
   </header>
 
   <div class="kz-controls">
-    <div class="src" role="radiogroup" aria-label="Welke zenders">
+    <div class="src" data-role="srcSection" role="radiogroup" aria-label="Welke zenders">
       <button type="button" role="radio" data-src="fm" aria-checked="true">Nederland.FM · <span data-role="cntFm"></span></button>
       <button type="button" role="radio" data-src="alles" aria-checked="false">Alle zenders · <span data-role="cntAll"></span></button>
     </div>
@@ -738,47 +756,34 @@ body.mini-floating .help-panel{bottom:314px}
   </div>
 
   <div class="tiles" id="tiles"></div>
-  <div class="empty" id="tilesEmpty" hidden>Geen zender gevonden. Kijk hieronder in de zenderdatabase, of kies "Alle zenders".</div>
+  <div class="empty" id="tilesEmpty" hidden>Geen zender gevonden. Kijk hieronder bij de zoekresultaten.</div>
 
-  <section aria-labelledby="dbTitle" style="display:flex;flex-direction:column;gap:12px">
-    <div class="db-head">
-      <div>
-        <h2 class="section-h" id="dbTitle">Uit de zenderdatabase</h2>
-        <p class="section-p" id="dbInfo">Zoek hierboven om ook zenders uit de hele wereld te vinden.</p>
-      </div>
-      <label><span class="sr">Land</span>
-        <select class="select" id="cc">
-          <option value="">Alle landen</option>
-          <option value="NL">Nederland</option>
-          <option value="BE">België</option>
-          <option value="DE">Duitsland</option>
-          <option value="GB">Verenigd Koninkrijk</option>
-          <option value="US">Verenigde Staten</option>
-          <option value="FR">Frankrijk</option>
-          <option value="ES">Spanje</option>
-          <option value="IT">Italië</option>
-        </select>
-      </label>
+  <section class="db-section" id="dbSection" aria-labelledby="dbTitle" hidden>
+    <div>
+      <h2 class="section-h" id="dbTitle">Meer Nederlandse zenders</h2>
+      <p class="section-p" id="dbInfo"></p>
     </div>
     <div class="tiles" id="dbTiles"></div>
   </section>
 
   <div class="more">
     <details>
-      <summary>Eigen stream-adres toevoegen</summary>
-      <form class="custom-form" id="customForm" autocomplete="off">
-        <input class="field" id="cName" placeholder="Naam" required>
-        <input class="field" id="cUrl" type="url" placeholder="https://…/stream.mp3" required>
-        <button class="cta" type="submit">Toevoegen</button>
-      </form>
+      <summary>Meer: eigen stream, lijst bewaren of terugzetten</summary>
+      <div class="more-body">
+        <form class="custom-form" id="customForm" autocomplete="off">
+          <input class="field" id="cName" placeholder="Naam" required>
+          <input class="field" id="cUrl" type="url" placeholder="https://…/stream.mp3" required>
+          <button class="cta" type="submit">Toevoegen</button>
+        </form>
+        <div class="more-links">
+          <button class="linkbtn" type="button" id="exportBtn">Lijst exporteren</button>
+          <button class="linkbtn" type="button" id="importBtn">Lijst importeren</button>
+          <input type="file" id="importFile" accept=".json,application/json" hidden>
+          <button class="linkbtn" type="button" id="resetBtn">Standaardlijst herstellen</button>
+        </div>
+        <p class="note">Zenders van nederland.fm en radio.nl, internationale zenders en de open database van radio-browser.info. FM-frequenties: Antenneregister van de RDI. Plaatsen en postcodes: PDOK.</p>
+      </div>
     </details>
-    <div class="more-links">
-      <button class="linkbtn" type="button" id="exportBtn">Lijst exporteren</button>
-      <button class="linkbtn" type="button" id="importBtn">Lijst importeren</button>
-      <input type="file" id="importFile" accept=".json,application/json" hidden>
-      <button class="linkbtn" type="button" id="resetBtn">Standaardlijst herstellen</button>
-    </div>
-    <p class="note">Zenders van nederland.fm en radio.nl, aangevuld met de open database van radio-browser.info. FM-frequenties: Antenneregister van de RDI. Plaatsen en postcodes: PDOK.</p>
   </div>
 
   <div class="dockbar">
@@ -966,7 +971,8 @@ body.mini-floating .help-panel{bottom:314px}
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="zenders-data.js"></script>
+<!-- versienummer: een nieuwe site haalt zo altijd de nieuwe zenderdata op, niet een oude uit de cache -->
+<script src="zenders-data.js?v=20261127"></script>
 <script>
 (() => {
 'use strict';
@@ -1098,9 +1104,13 @@ async function geocode(q) {
 }
 
 /* ---------- Mijn lijst ---------- */
-const catById = id => CATALOG.find(c => c.id === id);
+/* internationale zenders (alleen online) en alles samen, voor het opzoeken van zenders */
+const INT = D.intStations || [];
+const ALLCAT = CATALOG.concat(INT);
+const INT_FAMS = ['Alle zenders', 'Mijn lijst', 'België', 'Duitsland', 'VK', 'Frankrijk', 'VS', 'Overig', 'Eigen'];
+const catById = id => ALLCAT.find(c => c.id === id);
 function fromCatalog(c, on) {
-  return { id: c.id, name: c.name, short: c.short, genre: c.genre, mono: c.mono, color: c.color, url: c.url, q: Array.isArray(c.q) ? c.q : null, fam: c.fam, on: on ?? (c.def ? !!c.on : true), hls: /\.m3u8(\?|$)/i.test(c.url), favicon: '', custom: false };
+  return { id: c.id, name: c.name, short: c.short, genre: c.genre, mono: c.mono, color: c.color, url: c.url, q: Array.isArray(c.q) ? c.q : null, set: c.set, fam: c.fam, on: on ?? (c.def ? !!c.on : true), hls: /\.m3u8(\?|$)/i.test(c.url), favicon: '', custom: false };
 }
 function makeCustom(o) {
   const name = String(o.name || 'Naamloos').trim().slice(0, 80) || 'Naamloos';
@@ -1112,12 +1122,12 @@ function makeCustom(o) {
     httpOnly: !!o.httpOnly, fail: typeof o.fail === 'number' ? o.fail : undefined
   };
 }
-const defaultList = () => CATALOG.filter(c => c.def).map(c => fromCatalog(c));
+const defaultList = (r = 'nl') => (r === 'int' ? INT : CATALOG).filter(c => c.def).map(c => fromCatalog(c));
 function sanitizeList(arr) {
   const out = [], seen = new Set();
   for (const s of arr || []) {
     if (!s || typeof s.name !== 'string' || !isWeb(s.url)) continue;
-    const cat = catById(s.id) || CATALOG.find(c => normUrl(c.url) === normUrl(s.url));
+    const cat = catById(s.id) || ALLCAT.find(c => normUrl(c.url) === normUrl(s.url));
     const st = cat ? fromCatalog(cat, s.on ?? s.enabled ?? true) : makeCustom(s);
     if (typeof s.fail === 'number') st.fail = s.fail;
     if (seen.has(st.id)) continue;
@@ -1130,9 +1140,12 @@ function loadList() {
   if (Array.isArray(v2)) return sanitizeList(v2);
   const v1 = restore('stations');
   if (Array.isArray(v1) && v1.length) return sanitizeList(v1.map(s => Object.assign({}, s, { on: s.enabled !== false })));
-  return defaultList();
+  return defaultList('nl');
 }
-let list = loadList();
+function loadIntList() { const v = restore('list2int'); return Array.isArray(v) ? sanitizeList(v) : defaultList('int'); }
+/* elke kant (Nederland, Internationaal) heeft een eigen Mijn lijst; 'list' is die van de kant die nu aanstaat */
+let listNl = loadList(), listInt = loadIntList();
+let list = listNl;
 const old = restore('settings') || {};
 const settings = {
   minutes: Number(old.minutes) > 0 ? Number(old.minutes) : (Number(old.min) > 0 ? Number(old.min) : 30),
@@ -1145,12 +1158,15 @@ const settings = {
   myLoc: old.myLoc && typeof old.myLoc.lat === 'number' && typeof old.myLoc.lon === 'number' && typeof old.myLoc.name === 'string' ? old.myLoc : null,
   asked: old.asked === true,
   /* geluidskwaliteit: 'hoog' = beste stream, 'zuinig' = lichtste stream (data sparen); standaard volgt de bespaarstand van de browser */
-  quality: old.quality === 'zuinig' || old.quality === 'hoog' ? old.quality : (navigator.connection && navigator.connection.saveData ? 'zuinig' : 'hoog')
+  quality: old.quality === 'zuinig' || old.quality === 'hoog' ? old.quality : (navigator.connection && navigator.connection.saveData ? 'zuinig' : 'hoog'),
+  region: old.region === 'int' ? 'int' : 'nl'
 };
+if (settings.region === 'int') list = listInt;
 if (settings.myLoc) settings.asked = true;
 delete old.loc;
 const effLoc = () => settings.myLoc || AMS;
-const saveList = () => store('list2', list);
+const saveList = () => { if (settings.region === 'int') { listInt = list; if (INT.length) store('list2int', list); } else { listNl = list; store('list2', list); } };
+const lastKey = () => settings.region === 'int' ? 'lastInt' : 'last';
 const saveSettings = () => store('settings', Object.assign({}, old, settings));
 const byId = id => list.find(s => s.id === id);
 const enabled = () => list.filter(s => s.on);
@@ -1159,11 +1175,11 @@ saveList();
 
 /* ---------- welke zenders staan op de schaal ---------- */
 let fmMap = bestFm(effLoc().lat, effLoc().lon);
-const srcSet = () => CATALOG.filter(c => settings.source === 'alles' || c.set === 'fm');
+const srcSet = () => settings.region === 'int' ? INT : CATALOG.filter(c => settings.source === 'alles' || c.set === 'fm');
 let dialCache = null;
 function dialState() {
   const cur = tuningTo || current;
-  const key = settings.mode + '|' + settings.source + '|' + effLoc().lat + ',' + effLoc().lon + '|' + list.map(s => s.id + (s.on ? 1 : 0)).join() + '|' + (cur ? cur.id : '');
+  const key = settings.region + '|' + settings.mode + '|' + settings.source + '|' + effLoc().lat + ',' + effLoc().lon + '|' + list.map(s => s.id + (s.on ? 1 : 0)).join() + '|' + (cur ? cur.id : '');
   if (dialCache && dialCache.key === key) return dialCache;
   let pool;
   if (settings.mode === 'radio') {
@@ -1206,7 +1222,7 @@ let tuneToken = 0, tuningTo = null, failStreak = 0;
 let nextAt = 0, pausedRemaining = 0, fadeTimer = null, stallTimer = null;
 let band = 'fm', bandAt = 0, lastFm = null, dragF = null, dragP = null;
 {
-  const lastId = restore('last');
+  const lastId = restore(lastKey());
   current = byId(lastId) || (catById(lastId) ? fromCatalog(catById(lastId)) : null);
   if (current) { band = fmMap[current.id] ? 'fm' : 'online'; if (band === 'fm') lastFm = current.id; }
 }
@@ -1258,7 +1274,8 @@ async function attachSource(el, st, url) {
   if (isHls && !el.canPlayType('application/vnd.apple.mpegurl')) {
     const Hls = await loadHls();
     if (Hls && Hls.isSupported()) {
-      const h = new Hls(); el._hls = h;
+      /* live radio: maximaal een halve minuut vooruit en achteruit bufferen, anders groeit het geheugen urenlang door */
+      const h = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60, backBufferLength: 30, liveDurationInfinity: true }); el._hls = h;
       h.on(Hls.Events.ERROR, (_, d) => { if (d && d.fatal) el.dispatchEvent(new Event('error')); });
       h.loadSource(url); h.attachMedia(el);
       return;
@@ -1387,7 +1404,7 @@ async function tuneTo(st, opts = {}) {
   nextAt = Date.now() + (opts.resume && pausedRemaining > 0 ? pausedRemaining : intervalMs());
   pausedRemaining = 0;
   crossfade(oldIdx === -1 ? null : decks[oldIdx], el);
-  store('last', st.id);
+  store(lastKey(), st.id);
   saveList(); updateMedia(); render();
 }
 function start() {
@@ -1513,7 +1530,7 @@ function buildDial(d) {
   d.range.min = band === 'fm' ? 875 : 0;
   d.range.max = band === 'fm' ? 1110 : 1000;
   d.er.hidden = band !== 'fm';
-  d.el.hidden = band !== 'online';
+  d.el.hidden = band !== 'online' || !ds.fm.length;
   d.er.setAttribute('aria-label', 'Naar de ' + ds.online.length + ' online zenders');
   d.el.setAttribute('aria-label', 'Terug naar de ' + ds.fm.length + ' FM-zenders');
 }
@@ -1680,7 +1697,7 @@ function renderNow() {
     const via = fm ? 'via ' + mastName(fm.site) : 'via internet';
     const tip = fm
       ? mastTower(fm.site) + ' · ' + fm.km + ' km van ' + loc + (fm.alt ? '. Ook te horen op ' + fm.alt.mhz.toFixed(1) + ' via ' + mastName(fm.alt.site) : '')
-      : 'Geen FM-zender in de buurt van ' + loc + '. Deze zender speelt hier via internet.';
+      : st.set === 'int' ? 'Buitenlandse zender; je luistert via internet.' : 'Geen FM-zender in de buurt van ' + loc + '. Deze zender speelt hier via internet.';
     metaHTML = (st.genre ? esc(st.genre) + ' · ' : '') + '<span class="tip mast" tabindex="0" role="button" aria-label="' + esc(via + '. ' + tip) + '">' + esc(via) + '<span class="tipbox" role="tooltip">' + esc(tip) + '</span></span>';
   } else metaHTML = 'Druk op afspelen. Kies Radio om zelf een zender te kiezen, of Shuffle om om de paar minuten te wisselen.';
   const lit = live || (t.dragging && t.locked);
@@ -1745,9 +1762,10 @@ function renderClock() {
   else if (!intent && pausedRemaining && current) txt = 'gepauzeerd · nog ' + fmt(pausedRemaining);
   else txt = 'wisselt elke ' + fmtMin(settings.minutes) + ' min';
   qa('[data-role="clock"]').forEach(el => { if (el.textContent !== txt) el.textContent = txt; });
-  $$('[data-role="bar"]').forEach(el => el.style.width = (frac * 100).toFixed(2) + '%');
-  const ring = settings.mode === 'shuffle' && intent ? 'conic-gradient(var(--amber) ' + (frac * 360).toFixed(1) + 'deg, rgba(255,255,255,.12) 0deg)' : 'rgba(255,255,255,.12)';
-  $$('[data-role="ring"]').forEach(el => el.style.background = ring);
+  const bar = 'scaleX(' + frac.toFixed(4) + ')';
+  $$('[data-role="bar"]').forEach(el => { if (el.style.transform !== bar) el.style.transform = bar; });
+  const ring = settings.mode === 'shuffle' && intent ? 'conic-gradient(var(--amber) ' + Math.round(frac * 360) + 'deg, rgba(255,255,255,.12) 0deg)' : 'rgba(255,255,255,.12)';
+  $$('[data-role="ring"]').forEach(el => { if (el.dataset.k !== ring) { el.style.background = ring; el.dataset.k = ring; } });
   if (view === 'fs') {
     let tn = '';
     try { tn = new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }); } catch (e) {}
@@ -1762,21 +1780,24 @@ function renderStatic() {
   $$('[data-mode]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === settings.mode)));
   $$('[data-src]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.src === settings.source)));
   $$('[data-quality]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.quality === settings.quality)));
+  $$('[data-region]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.region === settings.region)));
+  $$('[data-role="srcSection"]').forEach(el => el.hidden = settings.region === 'int');
   $$('[data-role="cntFm"]').forEach(el => el.textContent = CATALOG.filter(c => c.set === 'fm').length);
   $$('[data-role="cntAll"]').forEach(el => el.textContent = CATALOG.length);
   $$('[data-role="tagline"]').forEach(el => el.textContent = radio ? 'Gewoon radio: kies een zender en hij blijft spelen.' : 'Je eigen zenders, om de paar minuten willekeurig gewisseld.');
   $$('[data-role="modeInfo"]').forEach(el => el.textContent = radio ? 'Je kiest zelf de zender' : enabled().length + ' zenders in rotatie');
   $$('[data-role="locName"]').forEach(el => el.textContent = effLoc().name);
-  $$('[data-role="dialCount"]').forEach(el => el.textContent = ds.fm.length + ' FM-zenders in ' + effLoc().name + (ds.online.length ? ' · ' + ds.online.length + ' zonder FM, via internet' : ''));
+  $$('[data-role="dialCount"]').forEach(el => el.textContent = settings.region === 'int' ? ds.online.length + ' internationale zenders · via internet' : ds.fm.length + ' FM-zenders in ' + effLoc().name + (ds.online.length ? ' · ' + ds.online.length + ' zonder FM, via internet' : ''));
 }
 function renderList() {
   const radio = settings.mode === 'radio';
   const open = isNarrow() ? settings.compactListOpen : settings.listOpen;
   $('#listToggle').setAttribute('aria-expanded', String(open));
   $('#list').hidden = !open;
-  $('#listSub').textContent = isNarrow() || radio
-    ? list.length + ' zenders' + (open && !isNarrow() ? ' · klik een zender voor zijn eigen pagina' : '')
-    : enabled().length + ' van ' + list.length + ' in rotatie' + (open ? ' · klik een zender voor zijn eigen pagina' : ' · ingeklapt');
+  /* ingeklapt: alleen de titel; open: aantal en de knop om zenders toe te voegen */
+  $('#listSub').textContent = radio ? list.length + ' zenders' : enabled().length + ' van ' + list.length + ' in rotatie';
+  $('#listSub').hidden = !open;
+  $('#listAdd').hidden = !open;
   if (!list.length) { $('#list').innerHTML = '<div class="empty">Mijn lijst is leeg. Kies zenders via "Zenders toevoegen".</div>'; return; }
   $('#list').innerHTML = list.map(s => {
     const isNow = current && s.id === current.id && (intent || tuningTo);
@@ -1842,6 +1863,22 @@ function setMode(m) {
   if (current) setBandFor(current);
   render();
   placeSeg(true, 'mode');
+}
+/* Nederland | Internationaal: de hele radio wisselt, met een eigen Mijn lijst; per kant onthouden we de laatste zender */
+function setRegion(r) {
+  if (r === settings.region) return;
+  if (current) store(lastKey(), current.id);
+  saveList();
+  settings.region = r; saveSettings();
+  list = r === 'int' ? listInt : listNl;
+  bag = []; dialCache = null; fam = 'Alle zenders';
+  const lastId = restore(lastKey());
+  const c = catById(lastId), inRegion = c && ((c.set === 'int') === (r === 'int'));
+  const next = byId(lastId) || (inRegion ? fromCatalog(c) : null) || list[0] || (srcSet()[0] ? fromCatalog(srcSet()[0]) : null);
+  placeSeg(true, 'region');
+  if (intent && next) playStation(next);
+  else { current = next; if (current) setBandFor(current); render(); }
+  if (query.trim().length >= 2) searchDb();
 }
 /* Hoge kwaliteit / Data sparen: speelt er iets, dan stemmen we dezelfde zender opnieuw af op de andere stream */
 function setQuality(q) {
@@ -2043,14 +2080,14 @@ function renderModal() {
   const inList = !!byId(st.id);
   const idx = Math.max(0, CATALOG.findIndex(c => c.id === st.id));
   $('#mHead').style.setProperty('--hb', 'radial-gradient(120% 90% at ' + (12 + (idx * 37) % 76) + '% 0%, rgba(255,255,255,.24), transparent 55%), linear-gradient(140deg, ' + st.color + ' 0%, ' + st.color + ' 50%, #0F1216 135%)');
-  $('#mBadge').textContent = playingThis ? 'Nu op de radio · ' + (fm ? 'FM ' + fm.mhz.toFixed(1) : 'online') : (fm ? 'FM ' + fm.mhz.toFixed(1) + ' in ' + effLoc().name : 'Geen FM in ' + effLoc().name + ' · via internet');
+  $('#mBadge').textContent = st.set === 'int' ? (playingThis ? 'Nu op de radio · internationaal' : 'Internationaal · via internet') : playingThis ? 'Nu op de radio · ' + (fm ? 'FM ' + fm.mhz.toFixed(1) : 'online') : (fm ? 'FM ' + fm.mhz.toFixed(1) + ' in ' + effLoc().name : 'Geen FM in ' + effLoc().name + ' · via internet');
   const logo = $('#mLogo'); logo.dataset.ini = st.mono; logo.innerHTML = isWeb(st.favicon) ? '<img class="logo-img" src="' + esc(st.favicon) + '" alt="" referrerpolicy="no-referrer">' : esc(st.mono);
   $('#mName').textContent = st.name;
   $('#mGenre').textContent = st.genre || '';
   $('#mWave').classList.toggle('on', playingThis);
   const dots = ds.fm.filter(s => s.id !== st.id).map(s => '<span class="d" style="left:' + pctNum(fmMap[s.id].mhz).toFixed(2) + '%"></span>').join('');
   $('#mSpot').innerHTML = '<span class="ln"></span>' + dots + (fm ? '<span class="d me" style="left:' + pctNum(fm.mhz).toFixed(2) + '%;--c:' + esc(st.color) + '"></span>' : '');
-  $('#mMast').textContent = fm ? 'Via ' + fm.site + ', ' + fm.km + ' km verderop' +(fm.alt ? ' · ook te horen op ' + fm.alt.mhz.toFixed(1) + ' via ' + fm.alt.site : '') : 'In ' + effLoc().name + ' is deze zender niet via FM te ontvangen. Je luistert via internet.';
+  $('#mMast').textContent = st.set === 'int' ? 'Een buitenlandse zender. Die heeft hier geen FM-frequentie; je luistert via internet.' : fm ? 'Via ' + fm.site + ', ' + fm.km + ' km verderop' +(fm.alt ? ' · ook te horen op ' + fm.alt.mhz.toFixed(1) + ' via ' + fm.alt.site : '') : 'In ' + effLoc().name + ' is deze zender niet via FM te ontvangen. Je luistert via internet.';
   $('#mFreq').textContent = fm ? fm.mhz.toFixed(1) : 'online';
   $('#mStatus').textContent = tuningTo && tuningTo.id === st.id ? 'Afstemmen' : playingThis ? 'Speelt nu' : (peekNext() && peekNext().id === st.id && intent && settings.mode === 'shuffle') ? 'Komt hierna' : recentFail(st) ? 'Storing' : 'Stil';
   const mine = byId(st.id);
@@ -2130,7 +2167,7 @@ function tileHTML(item, inList, src) {
 function renderKiezen() {
   const q = query.trim().toLowerCase();
   const hasEigen = list.some(s => s.custom);
-  $('#fams').innerHTML = FAMS.filter(f => (f !== 'Eigen' || hasEigen) && (f !== 'Regionaal' || settings.source === 'alles')).map(f => '<button type="button" class="chip-f" data-fam="' + esc(f) + '" aria-pressed="' + (f === fam) + '">' + esc(f) + '</button>').join('');
+  $('#fams').innerHTML = (settings.region === 'int' ? INT_FAMS : FAMS).filter(f => (f !== 'Eigen' || hasEigen) && (f !== 'Regionaal' || settings.source === 'alles')).map(f => '<button type="button" class="chip-f" data-fam="' + esc(f) + '" aria-pressed="' + (f === fam) + '">' + esc(f) + '</button>').join('');
   const inListIds = new Set(list.map(s => s.id));
   const items = srcSet().concat(list.filter(s => s.custom)).filter(x =>
     (fam === 'Alle zenders' || (fam === 'Mijn lijst' ? inListIds.has(x.id) : x.fam === fam)) &&
@@ -2140,10 +2177,13 @@ function renderKiezen() {
   $('#dockCount').textContent = list.length + (list.length === 1 ? ' zender' : ' zenders');
   $('#dockRot').textContent = enabled().length;
   const info = $('#dbInfo');
-  if (!q || q.length < 2) { info.textContent = 'Zoek hierboven om ook zenders uit de hele wereld te vinden.'; $('#dbTiles').innerHTML = ''; return; }
+  /* zoekresultaten uit de database pas tonen als je zoekt; Nederland of buitenland volgt de schakelaar op het startscherm */
+  $('#dbSection').hidden = !q || q.length < 2;
+  $('#dbTitle').textContent = settings.region === 'int' ? 'Meer internationale zenders' : 'Meer Nederlandse zenders';
+  if (!q || q.length < 2) { $('#dbTiles').innerHTML = ''; return; }
   if (dbState === 'loading') info.textContent = 'Zoeken naar "' + query.trim() + '"…';
   else if (dbState === 'error') info.textContent = 'De zenderdatabase reageert niet. Controleer je internetverbinding.';
-  else info.textContent = dbResults.length ? dbResults.length + ' zenders gevonden voor "' + query.trim() + '"' : 'Geen zenders gevonden voor "' + query.trim() + '".';
+  else info.textContent = dbResults.length ? dbResults.length + (dbResults.length === 1 ? ' zender' : ' zenders') + ' voor "' + query.trim() + '" uit de open database van radio-browser.info' : 'Geen zenders gevonden voor "' + query.trim() + '".';
   $('#dbTiles').innerHTML = dbResults.map(x => tileHTML(x, list.some(s => s.id === x.id || normUrl(s.url) === normUrl(x.url)), 'db')).join('');
 }
 async function api(path) {
@@ -2170,9 +2210,9 @@ async function searchDb() {
   if (q.length < 2) { dbResults = []; dbState = 'idle'; renderKiezen(); return; }
   const token = ++dbToken;
   dbState = 'loading'; renderKiezen();
-  const cc = $('#cc').value;
-  const base = { order: 'clickcount', reverse: 'true', limit: '40', hidebroken: 'true' };
-  if (cc) base.countrycode = cc;
+  const nl = settings.region !== 'int';
+  const base = { order: 'clickcount', reverse: 'true', limit: nl ? '40' : '60', hidebroken: 'true' };
+  if (nl) base.countrycode = 'NL';
   try {
     const [byName, byTag] = await Promise.all([
       api('/json/stations/search?' + new URLSearchParams(Object.assign({ name: q }, base))),
@@ -2183,13 +2223,16 @@ async function searchDb() {
     const map = new Map();
     for (const s of byName.concat(byTag)) {
       if (!isWeb(s.url_resolved || s.url)) continue;
+      if (!nl && s.countrycode === 'NL') continue;
       const k = String(s.name).toLowerCase().replace(/[^a-z0-9]+/g, '');
       if (!k) continue;
       const prev = map.get(k);
       if (!prev || score(s) > score(prev)) map.set(k, s);
     }
-    const known = new Set(CATALOG.map(c => normUrl(c.url)));
-    dbResults = [...map.values()].filter(s => !known.has(normUrl(s.url_resolved || s.url))).slice(0, 24).map(fromApi);
+    /* zenders die al tussen onze eigen tegels staan, laten we weg */
+    const known = new Set(ALLCAT.flatMap(c => [c.url].concat((c.q || []).map(v => v[0]))).map(normUrl));
+    const knownNames = new Set(ALLCAT.map(c => String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '')));
+    dbResults = [...map.entries()].filter(([k, s]) => !knownNames.has(k) && !known.has(normUrl(s.url_resolved || s.url))).map(([, s]) => s).slice(0, 24).map(fromApi);
     dbState = 'done';
   } catch (e) {
     if (token !== dbToken) return;
@@ -2203,7 +2246,6 @@ $('#q').addEventListener('input', e => {
   dbTimer = setTimeout(searchDb, 450);
   renderKiezen();
 });
-$('#cc').addEventListener('change', searchDb);
 $('#fams').addEventListener('click', e => { const b = e.target.closest('[data-fam]'); if (b) { fam = b.dataset.fam; renderKiezen(); } });
 function onTileClick(e) {
   const tile = e.target.closest('.tile[data-id]'); if (!tile) return;
@@ -2258,7 +2300,7 @@ $('#resetBtn').addEventListener('click', e => {
     return;
   }
   clearTimeout(resetArmed); resetArmed = null; b.textContent = 'Standaardlijst herstellen';
-  list = defaultList(); bag = []; dialCache = null;
+  list = defaultList(settings.region); bag = []; dialCache = null;
   if (current) current = byId(current.id) || current;
   saveList(); render(); toast('Standaardlijst teruggezet.');
 });
@@ -2268,6 +2310,7 @@ document.addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); return; }
   const m = e.target.closest('[data-mode]'); if (m) { setMode(m.dataset.mode); return; }
   const qb = e.target.closest('[data-quality]'); if (qb) { setQuality(qb.dataset.quality); return; }
+  const rg = e.target.closest('[data-region]'); if (rg) { setRegion(rg.dataset.region); return; }
   const sr = e.target.closest('[data-src]'); if (sr) { setSource(sr.dataset.src); return; }
   const a = e.target.closest('button[data-act]'); if (!a) return;
   if (a.closest('#list') || a.closest('.tile')) return;
@@ -2340,8 +2383,9 @@ window.matchMedia('(max-width: 720px)').addEventListener('change', () => renderL
 /* klok: telt af en wisselt op tijd (alleen in Shuffle) */
 setInterval(() => {
   if (settings.mode === 'shuffle' && intent && nextAt && !tuningTo && dragF == null && dragP == null && Date.now() >= nextAt) { nextAt = 0; hop(); }
-  renderClock();
-}, 250);
+  if (!document.hidden) renderClock();
+}, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) renderClock(); });
 
 makeDial($('#dialMain'));
 makeDial($('#dialFs'));

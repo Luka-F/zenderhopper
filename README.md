@@ -4,6 +4,7 @@ Online radio met een grote frequentieschaal. Luister gewoon naar één zender, o
 
 **Openen:** https://luka-f.github.io/zenderhopper/
 
+- **Nederland of Internationaal:** met de schakelaar bovenin wissel je de hele radio tussen Nederlandse zenders (met echte FM-frequenties) en een set bekende buitenlandse zenders zoals Studio Brussel, BBC Radio 6 Music, FIP en KEXP. Elke kant heeft een eigen Mijn lijst.
 - **Radio of Shuffle:** in Radio kies je zelf een zender en blijft die spelen. In Shuffle wisselt hij tussen de zenders in Mijn lijst die in rotatie staan; je stelt zelf in na hoeveel minuten.
 - **Nederland.FM of Alle zenders:** alle zenders van nederland.fm, of daarbovenop ook die van radio.nl, zoals de regionale omroepen.
 - **Echte FM-frequenties:** de schaal toont wat je op jouw plek via FM ontvangt. Bij je eerste bezoek vraagt de site waar je luistert: gebruik je locatie of typ een woonplaats of postcode. Kies je niets, dan is Amsterdam de standaard en staat er een vraagteken achter MHz. Onder de zendernaam zie je via welke zendmast je luistert. Schuif voorbij 108 MHz en je komt bij de zenders die hier geen FM hebben en via internet spelen; helemaal links ga je terug naar FM.
