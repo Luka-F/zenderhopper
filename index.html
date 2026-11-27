@@ -44,6 +44,9 @@ body.mode-radio .only-shuffle, body.mode-shuffle .only-radio{display:none!import
 .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px}
 .brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;min-width:0}
 .brand h1{margin:0;font:800 34px/1 var(--f-display);letter-spacing:-.025em}
+/* het site-icoon (zelfde als het favicon) voor de naam; schaalt mee met de kop */
+.brand-icon{display:inline-block;width:1.12em;height:1.12em;margin-right:.3em;vertical-align:-.2em;border-radius:23.4%;background:radial-gradient(ellipse 60% 60% at 62% 50%,rgba(244,162,30,.55),rgba(244,162,30,0)),linear-gradient(#1D232B,#0B0E11);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.brand-icon svg{display:block;width:100%;height:100%}
 .brand p{margin:0;font-size:15px;color:var(--muted)}
 .top-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .btn{height:44px;padding:0 18px 0 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:10px;white-space:nowrap}
@@ -611,7 +614,7 @@ body.fs-on #screenRadio,body.fs-on #screenKiezen,body.fs-on .help-btn{visibility
 <div class="wrap" id="screenRadio">
   <header class="top">
     <div class="brand">
-      <h1>Zenderhopper</h1>
+      <h1><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M13 34v16M25 40v10M53 34v16" stroke="#C9CED4" stroke-width="5" stroke-linecap="round"/><rect x="35" y="8" width="10" height="48" rx="5" fill="#F4A21E"/></svg></span>Zenderhopper</h1>
       <p data-role="tagline"></p>
     </div>
     <div class="top-actions">
@@ -1946,9 +1949,10 @@ function setRegion(r) {
   const lastId = restore(lastKey());
   const c = catById(lastId), inRegion = c && ((c.set === 'int') === (r === 'int'));
   const next = byId(lastId) || (inRegion ? fromCatalog(c) : null) || list[0] || (srcSet()[0] ? fromCatalog(srcSet()[0]) : null);
-  placeSeg(true, 'region');
   if (intent && next) playStation(next);
   else { current = next; if (current) setBandFor(current); render(); }
+  /* pas na render(): daar krijgt de gekozen knop aria-checked, en daar schuift het blokje naartoe */
+  placeSeg(true, 'region');
   if (query.trim().length >= 2) searchDb();
 }
 /* Hoge kwaliteit / Data sparen: speelt er iets, dan stemmen we dezelfde zender opnieuw af op de andere stream */
