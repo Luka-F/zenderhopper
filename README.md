@@ -11,7 +11,7 @@ Online radio met een grote frequentieschaal. Luister gewoon naar één zender, o
 - **Zenders kiezen:** tegels om zenders in Mijn lijst te zetten, plus zoeken in de open database van [radio-browser.info](https://www.radio-browser.info/) en een eigen stream-adres toevoegen.
 - **Geluidskwaliteit:** per zender zijn alle streamvarianten getest (MP3 en AAC, hoog en laag). Met *Hoge kwaliteit* speelt de best klinkende, met *Data sparen* de lichtste. Werkt een stream niet, dan valt hij vanzelf terug op de volgende. Naast "LIVE" zie je welke stream speelt, bijvoorbeeld AAC 96.
 - **Instellingen:** één knop op de radio met je locatie, de geluidskwaliteit en Nederland.FM / Alle zenders.
-- **Volledig scherm** met een draaiknop, en een zwevende mini-speler.
+- **Volledig scherm** met een draaiknop, en een zwevende mini-speler. In volledig scherm blijft het scherm aan, zodat je tv, monitor of tablet niet op zwart gaat.
 - **Over deze site:** het vraagteken rechtsonder legt uit waar Zenderhopper voor is en hoe het technisch werkt.
 - Je lijst en instellingen blijven in je eigen browser bewaard; met *Lijst exporteren* maak je een reservekopie.
 

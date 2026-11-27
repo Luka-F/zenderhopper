@@ -2003,10 +2003,33 @@ function enterFs() {
   toast('Volledig scherm · druk op Esc om terug te gaan');
   const el = document.documentElement;
   if (el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().catch(() => {});
+  keepAwake(true);
 }
+/* scherm aan houden zolang de radio in volledig scherm staat (Screen Wake Lock); daarbuiten mag het scherm gewoon uit */
+let wakeLock = null, wakeBusy = false;
+async function keepAwake(on) {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    if (on) {
+      if (wakeLock || wakeBusy || document.hidden) return;
+      wakeBusy = true;
+      const w = await navigator.wakeLock.request('screen');
+      wakeBusy = false;
+      if (view !== 'fs') { w.release().catch(() => {}); return; }
+      wakeLock = w;
+      w.addEventListener('release', () => { if (wakeLock === w) wakeLock = null; });
+    } else if (wakeLock) {
+      const w = wakeLock; wakeLock = null;
+      await w.release();
+    }
+  } catch (e) { wakeBusy = false; wakeLock = null; }
+}
+/* de browser laat de vergrendeling los als het venster verborgen is; terug in beeld vragen we hem opnieuw */
+document.addEventListener('visibilitychange', () => { if (!document.hidden && view === 'fs') keepAwake(true); });
 function exitFs() {
   if (view !== 'fs') return;
   view = 'normaal';
+  keepAwake(false);
   document.body.classList.remove('fs-on');
   $('#screenFs').hidden = true;
   if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
